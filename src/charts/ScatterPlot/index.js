@@ -22,7 +22,7 @@ const ScatterPlot = ({
   marginRight = 40,
   marginTop = 40,
   marginBottom = 40,
-  pointFill
+  style = {}
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
@@ -119,7 +119,16 @@ const ScatterPlot = ({
       )
       .attr("fill", d =>
         d.fill || colorScale ? colorScale(d[color.key]) : "#000000"
-      );
+      )
+      .on("mouseover", function (e, d) {
+        console.log(d);
+      });
+
+    //Add styles from style prop
+
+    Object.entries(style).map(([key, value]) => {
+      pointsGroup.style(key, value);
+    });
   };
 
   useEffect(() => {

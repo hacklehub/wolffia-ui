@@ -5,9 +5,12 @@ import { storiesOf } from "@storybook/react";
 
 import LineChart from "../../charts/LineChart";
 
+import { DateTime } from "luxon";
+
 import { curveLinear, curveStep } from "d3";
 
 const stories = storiesOf("LineCharts", module);
+const randBetween = (x, y) => x + Math.random() * (y - x);
 
 stories.add("Simple LineChart", () => {
   const [data, setData] = useState([
@@ -33,6 +36,7 @@ stories.add("Simple LineChart", () => {
               key: "value",
               color: "#FF5252",
               start: 0,
+              axis: "right",
               curve: curveStep,
               end: 1500,
               width: 3
@@ -53,26 +57,20 @@ stories.add("Simple LineChart", () => {
 });
 
 stories.add("Time series", () => {
-  const [data, setData] = useState([
-    {
-      date: "2021-01-01 09:15:00",
-      value: 1411
-    },
-    {
-      date: "2021-01-01 10:00:00",
-      value: 1500
-    },
-    {
-      date: "2021-01-02 15:00:00",
-      value: 1320
-    }
-  ]);
+  const arrayLength = 50;
+  const newData = new Array(arrayLength).fill("").map((_, index) => ({
+    date: DateTime.now()
+      .endOf("day")
+      .minus({ days: arrayLength - index })
+      .toFormat("yyyy-MM-dd hh:mm:ss"),
+    value: randBetween(1000, 1004) + randBetween(index - 10, index)
+  }));
 
   return (
     <>
       <LineChart
         id="time-series"
-        data={data}
+        data={newData}
         width={480}
         height={180}
         className="bg-white rounded"
@@ -82,7 +80,15 @@ stories.add("Time series", () => {
           scalingFunction: "time",
           format: "yyyy-MM-dd hh:mm:ss"
         }}
-        y={[{ key: "value", curve: curveLinear, start: 0 }]}
+        y={[
+          {
+            key: "value",
+            curve: curveLinear,
+            start: 980,
+            axis: "left",
+            axis: "right"
+          }
+        ]}
       />
     </>
   );

@@ -12,7 +12,7 @@ import { DateTime } from "luxon";
 import { line, zoom, easeSin, curveMonotoneX, brushX } from "d3";
 
 const LineChart = ({
-  data,
+  data = [],
   id,
   className,
   x,
@@ -202,7 +202,9 @@ const LineChart = ({
     const rightG = g.append("g");
     allRightY.map(column => {
       const newLine = line()
-        .x(d => (x.scalingFunction === "time" ? xFn(d[x.key]) : xFn(d[x.key])))
+        .x(d =>
+          x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+        )
         .y(d => yRightFn(d[column.key]))
         .curve(column.curve || curveMonotoneX);
 
@@ -284,7 +286,13 @@ const LineChart = ({
       const dataLeft = allLeftY.map(column => dataClosest[column.key]);
       const dataRight = allRightY.map(column => dataClosest[column.key]);
 
-      drawVLine(xValue(dataClosest), yLeftFn(max(dataLeft)));
+      drawVLine(
+        xValue(dataClosest),
+        max([
+          yLeftFn && yLeftFn(max(dataLeft)),
+          yRightFn && yRightFn(max(dataRight))
+        ])
+      );
 
       dataLeft.map(
         yValue => yValue && drawHLine(xValue(dataClosest), yLeftFn(yValue))
