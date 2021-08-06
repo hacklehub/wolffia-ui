@@ -2,11 +2,21 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import { select, pointer } from "d3-selection";
-import { max, min } from "d3-array";
-import { scaleLinear } from "d3-scale";
+import { max, min, extent } from "d3-array";
+import { scaleLinear, scaleOrdinal } from "d3-scale";
+
+import {
+  symbol,
+  symbolDiamond,
+  symbolCircle,
+  symbolSquare,
+  symbolTriangle,
+  symbolWye,
+  symbolCross,
+  symbolStar
+} from "d3-shape";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
-import { color, extent, scaleOrdinal, scalePow, scaleSqrt } from "d3";
 
 const ScatterPlot = ({
   data,
@@ -17,6 +27,7 @@ const ScatterPlot = ({
   size,
   tooltip,
   color,
+  shape,
   width = 490,
   height = 200,
   marginLeft = 40,
@@ -91,11 +102,7 @@ const ScatterPlot = ({
       .duration(400)
       .call(yAxis);
 
-    const sizeScale =
-      size &&
-      (size.scale === "linear"
-        ? scaleLinear()
-        : size.scale === "sqrt" && scaleSqrt());
+    const sizeScale = size && scaleLinear();
 
     sizeScale &&
       size.min &&
@@ -110,6 +117,23 @@ const ScatterPlot = ({
       scaleOrdinal()
         .domain(Object.keys(color.map))
         .range(Object.values(color.map));
+
+    const shapeMapping = {
+      circle: symbolCircle,
+      diamond: symbolDiamond,
+      triangle: symbolTriangle,
+      square: symbolSquare,
+      cross: symbolCross,
+      star: symbolStar,
+      wye: symbolWye
+    };
+
+    const shapeScale =
+      shape &&
+      shape.map &&
+      scaleOrdinal()
+        .domain(Object.keys(shape.map))
+        .range(Object.values(shape.map).map(shape => shapeMapping[shape]));
 
     // Tooltips
 
@@ -131,18 +155,21 @@ const ScatterPlot = ({
 
     pointsGroup
       .selectAll(".points")
-      .data(data.filter(d => !d.shape || d.shape === "circle"))
+      .data(data)
       .enter()
-      .append("circle")
-      .attr("cx", d => xFn(d[x.key]))
-      .attr("cy", d => yFn(d[y.key]))
+      .append("path")
       .attr(
-        "r",
+        "d",
+        // Todo other symbols
         d =>
-          (size.scale === "fixed"
-            ? size.value
-            : sizeScale && sizeScale(d[size.key])) || 2
+          symbol(
+            shapeScale
+              ? shapeScale(d[shape.key])
+              : shapeMapping[shape.default || "circle"],
+            sizeScale ? sizeScale(d[size.key]) : size.default || 12
+          )()
       )
+      .attr("transform", d => `translate(${xFn(d[x.key])},${yFn(d[y.key])})`)
       .attr("fill", d =>
         d.fill || colorScale ? colorScale(d[color.key]) : "#000000"
       )

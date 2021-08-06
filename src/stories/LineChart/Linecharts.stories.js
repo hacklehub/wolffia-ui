@@ -7,8 +7,6 @@ import LineChart from "../../charts/LineChart";
 
 import { DateTime } from "luxon";
 
-import { curveLinear, curveStep, style } from "d3";
-
 const stories = storiesOf("LineCharts", module);
 const randBetween = (x, y) => x + Math.random() * (y - x);
 
@@ -29,24 +27,22 @@ stories.add("Simple LineChart", () => {
           id="new-line"
           data={data}
           className="bg-white rounded"
-          x={{ key: "id", start: 0, end: 7 }}
+          x={{ key: "id", start: 0, end: 7, axisLabel: "Date" }}
           showGuidelines={true}
           y={[
             {
               key: "value",
-              color: "#FF5252",
               start: 0,
-              axis: "right",
-              curve: curveStep,
+              axis: "left",
+              curve: "step",
+              className: "stroke-current text-red-500",
               width: 3
             },
             {
               key: "reading",
               start: 0,
               axis: "left",
-              curve: curveLinear,
-              color: "#439d",
-              handleNull: "zero"
+              symbol: "diamond"
             }
           ]}
           tooltip={{ className: "bg-white border-2 p-2 rounded" }}
@@ -74,11 +70,12 @@ stories.add("Time series", () => {
         width={480}
         height={180}
         showGuidelines={true}
-        className="bg-white rounded"
+        className="bg-black text-gray-300 rounded"
         x={{
           key: "date",
           scalingFunction: "time",
-          format: "yyyy-MM-dd hh:mm:ss"
+          format: "yyyy-MM-dd hh:mm:ss",
+          axisLabel: "Date"
         }}
         y={[
           {
@@ -86,7 +83,8 @@ stories.add("Time series", () => {
             curve: curveLinear,
             start: 980,
             axis: "left",
-            axis: "right"
+            className: "text-red-200 stroke-current",
+            circleFill: true
           }
         ]}
         tooltip={{

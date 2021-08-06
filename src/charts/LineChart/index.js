@@ -4,12 +4,19 @@ import PropTypes from "prop-types";
 import { select, pointer, selectAll } from "d3-selection";
 import { scaleTime, scaleLinear } from "d3-scale";
 import { max, min, minIndex } from "d3-array";
-
+import {
+  curveStep,
+  curveLinear,
+  line,
+  symbol,
+  symbolDiamond,
+  symbolCircle
+} from "d3-shape";
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
+import { easeSin } from "d3-ease";
 import { transition } from "d3-transition";
 import { DateTime } from "luxon";
-import { line, zoom, easeSin, curveMonotoneX, brushX } from "d3";
 
 const LineChart = ({
   data = [],
@@ -61,7 +68,7 @@ const LineChart = ({
     xFn.range([marginLeft, width + marginLeft]);
 
     const xAxis =
-      xAxis === "top"
+      x.axis === "top"
         ? axisTop(xFn).ticks(x.axisTicks || 5)
         : axisBottom(xFn).ticks(x.axisTicks || 5);
 
@@ -114,11 +121,15 @@ const LineChart = ({
 
     const yRightAxis = allRightY.length > 0 && axisRight(yRightFn);
 
-    g.append("g")
-      .attr("class", "xAxis axis")
-      .attr("transform", `translate(0, ${height + marginTop})`)
+    const xAxisG = g
+      .append("g")
+      .attr("class", "axis--x axis")
+      .attr(
+        "transform",
+        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
+      )
       .transition()
-      .duration(400)
+      .duration(100)
       .call(xAxis);
 
     yLeftAxis &&
@@ -127,7 +138,7 @@ const LineChart = ({
         .attr("class", "axis axis--left-y")
         .attr("transform", `translate(${marginLeft},0)`)
         .transition()
-        .duration(400)
+        .duration(100)
         .call(yLeftAxis);
 
     yRightAxis &&
@@ -146,46 +157,53 @@ const LineChart = ({
       const seriesData = data.filter(
         d => Number.isFinite(d[column.key]) || column.handleNull === "zero"
       );
+
+      const columnCurve = column.curve === "step" && curveStep;
+
       const newLine = line()
         .x(d =>
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
         .y(d => yLeftFn(d[column.key] || (column.handleNull === "zero" && 0)))
-        .curve(column.curve || curveMonotoneX);
+        .curve(columnCurve || curveLinear);
 
       const seriesPath = leftG
         .append("path")
+        .attr("class", column.className || "stroke-current text-black")
         .datum(seriesData)
         .attr("fill", "none")
-        .attr("stroke", column.color || "#000000")
         .attr("d", newLine);
 
-      const pathLength = seriesPath.node().getTotalLength();
+      if (column.transition !== "none") {
+        const pathLength = seriesPath.node().getTotalLength();
 
-      const transitionPath = transition().ease(easeSin).duration(400);
-
-      seriesPath
-        .attr("stroke-dashoffset", pathLength)
-        .attr("stroke-dasharray", pathLength)
-        .transition(transitionPath)
-        .attr("stroke-dashoffset", 0);
+        seriesPath
+          .attr("stroke-dashoffset", pathLength)
+          .attr("stroke-dasharray", pathLength)
+          .transition(transition().ease(easeSin).duration(600))
+          .attr("stroke-dashoffset", 0);
+      }
 
       const leftCircles = leftG
         .selectAll(".left-g")
         .data(seriesData)
         .enter()
-        .append("circle")
-        .attr("cx", d =>
-          x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+        .append("path")
+        .attr(
+          "d",
+          // Todo other symbols
+          symbol()
+            .type(column.symbol ? symbolDiamond : symbolCircle)
+            .size(16)
         )
-        .attr("cy", d =>
-          yLeftFn(d[column.key] || (column.handleNull === "zero" && 0))
-        )
-        .attr("fill", column.color)
-        .transition()
-        .ease(easeSin)
-        .duration(400)
-        .attr("r", d => (d[column.key] || column.handleNull ? 3 : 0));
+        .attr("class", `${column.className} fill-current`)
+        .attr(
+          "transform",
+          d =>
+            `translate(${
+              x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+            },${yLeftFn(d[column.key] || (column.handleNull === "zero" && 0))})`
+        );
     });
 
     const rightG = g.append("g");
@@ -195,52 +213,54 @@ const LineChart = ({
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
         .y(d => yRightFn(d[column.key] || (column.handleNull === "zero" && 0)))
-        .curve(column.curve || curveMonotoneX);
+        .curve(column.curve || curveLinear);
 
       const seriesData = data.filter(
         d => Number.isFinite(d[column.key]) || column.handleNull === "zero"
       );
       const seriesPath = rightG
         .append("path")
+        .attr("class", column.className || "stroke-current text-black")
         .datum(seriesData)
         .attr("fill", "none")
-        .attr("stroke", column.color || "#000000")
         .attr("d", newLine);
 
-      const pathLength = seriesPath.node().getTotalLength();
+      if (column.transition !== "none") {
+        const pathLength = seriesPath.node().getTotalLength();
 
-      const transitionPath = transition().ease(easeSin).duration(400);
-
-      seriesPath
-        .attr("stroke-dashoffset", pathLength)
-        .attr("stroke-dasharray", pathLength)
-        .transition(transitionPath)
-        .attr("stroke-dashoffset", 0);
+        seriesPath
+          .attr("stroke-dashoffset", pathLength)
+          .attr("stroke-dasharray", pathLength)
+          .transition(transition().ease(easeSin).duration(600))
+          .attr("stroke-dashoffset", 0);
+      }
 
       const rightCircles = leftG
         .selectAll(".left-g")
         .data(seriesData)
         .enter()
-        .append("circle")
-        .attr("cx", d =>
-          x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+        .append("path")
+        .attr(
+          "d",
+          // Todo other symbols
+          symbol()
+            .type(column.symbol ? symbolDiamond : symbolCircle)
+            .size(16)
         )
-        .attr("cy", d =>
-          yRightFn(d[column.key] || (column.handleNull === "zero" && 0))
-        )
-        .attr("fill", column.color)
-        .transition()
-        .ease(easeSin)
-        .duration(400)
-        .attr("r", d => (d[column.key] || column.handleNull ? 3 : 0));
+        .attr("class", `${column.className} fill-current`)
+        .attr(
+          "transform",
+          d =>
+            `translate(${
+              x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+            },${yLeftFn(d[column.key] || (column.handleNull === "zero" && 0))})`
+        );
     });
     // Tooltips
 
     const tooltipDiv = select("body")
       .append("div")
       .attr("id", "tooltip")
-      .style("transition-property", "opacity")
-      .style("transition-duration", "1000")
       .style("position", "absolute");
 
     tooltipDiv.attr("class", `tooltip ${tooltip.className || ""}`);
@@ -340,6 +360,9 @@ const LineChart = ({
 
   useEffect(() => {
     refreshChart();
+    return () => {
+      selectAll(".tooltip").remove();
+    };
   }, [data]);
 
   return (
@@ -361,6 +384,7 @@ LineChart.propTypes = {
     convert: PropTypes.func,
     axis: PropTypes.oneOf(["bottom", "top"]),
     axisTicks: PropTypes.number,
+    axisLabel: PropTypes.string,
     start: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
     end: PropTypes.oneOfType([PropTypes.object, PropTypes.number])
   }),
@@ -371,7 +395,7 @@ LineChart.propTypes = {
       start: PropTypes.number,
       end: PropTypes.number,
       ticks: PropTypes.number,
-      color: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+      className: PropTypes.string,
       handleNull: PropTypes.oneOf(["zero"])
     })
   ),

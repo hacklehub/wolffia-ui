@@ -20,6 +20,8 @@ stories.add("Basic Scatterplot", () => {
     category: categories[randBetween(0, 2)]
   }));
 
+  const shapeMap = { UDF: "square", LDF: "diamond" };
+
   return (
     <ScatterPlot
       id="random-scatter"
@@ -31,7 +33,8 @@ stories.add("Basic Scatterplot", () => {
         start: 0,
         end: 2000
       }}
-      size={{ key: "sizeVariable", scale: "sqrt", min: 1, max: 2 }}
+      shape={{ key: "category", map: shapeMap }}
+      size={{ key: "sizeVariable", min: 10, max: 40 }}
       color={{ key: "category", map: colorMap }}
       style={{ opacity: "0.5" }}
       tooltip={{
