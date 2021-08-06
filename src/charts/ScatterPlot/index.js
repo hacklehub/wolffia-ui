@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-import { select } from "d3-selection";
+import { select, pointer } from "d3-selection";
 import { max, min } from "d3-array";
 import { scaleLinear } from "d3-scale";
 
@@ -15,6 +15,7 @@ const ScatterPlot = ({
   x,
   y,
   size,
+  tooltip,
   color,
   width = 490,
   height = 200,
@@ -47,7 +48,9 @@ const ScatterPlot = ({
       ])
       .range([marginLeft, width + marginLeft]);
 
-    const xAxis = axisBottom(xFn).ticks(x.axisTicks || 5);
+    const xAxis = (x.axis === "top" ? axisTop(xFn) : axisBottom(xFn)).ticks(
+      x.axisTicks || 5
+    );
 
     const yFn = scaleLinear()
       .domain([
@@ -64,18 +67,26 @@ const ScatterPlot = ({
       ])
       .range([height + marginTop, marginTop]);
 
-    const yAxis = axisLeft(yFn).ticks(y.axisTicks || 5);
+    const yAxis = (y.axis === "right" ? axisRight(yFn) : axisLeft(yFn)).ticks(
+      y.axisTicks || 5
+    );
 
     g.append("g")
       .attr("class", "xAxis axis")
-      .attr("transform", `translate(0, ${height + marginTop})`)
+      .attr(
+        "transform",
+        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
+      )
       .transition()
       .duration(400)
       .call(xAxis);
 
     g.append("g")
       .attr("class", "yAxis axis")
-      .attr("transform", `translate(${marginLeft},0)`)
+      .attr(
+        "transform",
+        `translate(${y.axis === "right" ? marginLeft + width : marginLeft},0)`
+      )
       .transition()
       .duration(400)
       .call(yAxis);
@@ -100,6 +111,21 @@ const ScatterPlot = ({
         .domain(Object.keys(color.map))
         .range(Object.values(color.map));
 
+    // Tooltips
+
+    const tooltipDiv = select("body")
+      .append("div")
+      .attr("id", "tooltip")
+      .style("transition-property", "opacity")
+      .style("transition-duration", "1000")
+      .style("position", "absolute");
+
+    tooltipDiv.attr("class", `tooltip ${tooltip.className || ""}`);
+    tooltip.style &&
+      Object.entries(tooltip.style).map(([key, value]) =>
+        tooltipDiv.style(key, value)
+      );
+
     // Drawing
     const pointsGroup = g.append("g");
 
@@ -120,12 +146,34 @@ const ScatterPlot = ({
       .attr("fill", d =>
         d.fill || colorScale ? colorScale(d[color.key]) : "#000000"
       )
-      .on("mouseover", function (e, d) {
-        console.log(d);
-      });
+      .on("mouseenter", onMouseOverG)
+      .on("mousemove", onMouseMove)
+      .on("mouseleave", onMouseLeave);
+
+    function onMouseMove(event) {
+      const [bX, bY] = pointer(event, select("body"));
+      tooltipDiv.style("left", `${bX + 10}px`).style("top", `${bY + 10}px`);
+    }
+
+    function onMouseOverG(event, row) {
+      tooltip && tooltipDiv.style("opacity", 1);
+      tooltipDiv.html(
+        tooltip.html
+          ? tooltip.html(row)
+          : tooltip.keys
+          ? tooltip.keys.map(key => `${key}: ${row[key] || ""}`).join("<br/>")
+          : Object.entries(row)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join("<br/>")
+      );
+    }
+
+    function onMouseLeave(event) {
+      // selectAll(".axisPointLine").remove();
+      tooltip && tooltipDiv.style("opacity", "0");
+    }
 
     //Add styles from style prop
-
     Object.entries(style).map(([key, value]) => {
       pointsGroup.style(key, value);
     });

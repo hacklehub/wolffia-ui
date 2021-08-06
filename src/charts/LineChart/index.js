@@ -17,6 +17,7 @@ const LineChart = ({
   className,
   x,
   y,
+  tooltip,
   width = 490,
   height = 200,
   marginLeft = 40,
@@ -39,21 +40,19 @@ const LineChart = ({
       x.scalingFunction === "time"
         ? scaleTime()
             .domain([
-              x.start !== null && x.start !== undefined
+              Number.isFinite(x.start)
                 ? x.start
                 : min(data.map(d => toDateTime(d))),
-              x.end !== null && x.end !== undefined
-                ? x.end
-                : max(data.map(d => toDateTime(d)))
+              Number.isFinite(x.end) ? x.end : max(data.map(d => toDateTime(d)))
             ])
             .nice()
         : scaleLinear().domain([
-            x.start !== null && x.start !== undefined
+            Number.isFinite(x.start)
               ? x.start
               : !x.convert
               ? min(data.map(d => d[x.key]))
               : min(data.map(d => x.convert(d))),
-            x.end !== null && x.end !== undefined
+            Number.isFinite(x.start)
               ? x.end
               : x.convert
               ? max(data.map(d => x.convert(d)))
@@ -71,10 +70,10 @@ const LineChart = ({
     const minLeftYs =
         allLeftY.length > 0 &&
         min([
+          ...allLeftY.map(column => column.start),
           ...allLeftY.map((column, minValue) =>
             min(data.map(d => d[column.key]))
-          ),
-          ...allLeftY.map(column => column.start)
+          )
         ]),
       maxLeftYs =
         allLeftY.length > 0 &&
@@ -140,33 +139,23 @@ const LineChart = ({
 
     // Todo Brush zooming
 
-    const brush = brushX() // Add the brush feature using the d3.brush function
-      .extent([
-        [0, 0],
-        [width, height]
-      ]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-      .on("end", updateChart);
-
-    const updateChart = (event, d) => {
-      const extent = event.selection;
-
-      console.log(extent);
-    };
-
     // Draw left axis values
     const leftG = g.append("g").attr("class", "left-g");
 
     allLeftY.map(column => {
+      const seriesData = data.filter(
+        d => Number.isFinite(d[column.key]) || column.handleNull === "zero"
+      );
       const newLine = line()
         .x(d =>
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
-        .y(d => yLeftFn(d[column.key]))
+        .y(d => yLeftFn(d[column.key] || (column.handleNull === "zero" && 0)))
         .curve(column.curve || curveMonotoneX);
 
       const seriesPath = leftG
         .append("path")
-        .datum(data.filter(d => d[column.key]))
+        .datum(seriesData)
         .attr("fill", "none")
         .attr("stroke", column.color || "#000000")
         .attr("d", newLine);
@@ -181,22 +170,22 @@ const LineChart = ({
         .transition(transitionPath)
         .attr("stroke-dashoffset", 0);
 
-      seriesPath.append("g").attr("class", "brush").call(brush);
-
       const leftCircles = leftG
         .selectAll(".left-g")
-        .data(data.filter(d => d[column.key]))
+        .data(seriesData)
         .enter()
         .append("circle")
         .attr("cx", d =>
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
-        .attr("cy", d => yLeftFn(d[column.key]))
+        .attr("cy", d =>
+          yLeftFn(d[column.key] || (column.handleNull === "zero" && 0))
+        )
         .attr("fill", column.color)
         .transition()
         .ease(easeSin)
         .duration(400)
-        .attr("r", d => (d[column.key] ? 3 : 0));
+        .attr("r", d => (d[column.key] || column.handleNull ? 3 : 0));
     });
 
     const rightG = g.append("g");
@@ -205,12 +194,15 @@ const LineChart = ({
         .x(d =>
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
-        .y(d => yRightFn(d[column.key]))
+        .y(d => yRightFn(d[column.key] || (column.handleNull === "zero" && 0)))
         .curve(column.curve || curveMonotoneX);
 
+      const seriesData = data.filter(
+        d => Number.isFinite(d[column.key]) || column.handleNull === "zero"
+      );
       const seriesPath = rightG
         .append("path")
-        .datum(data.filter(d => d[column.key]))
+        .datum(seriesData)
         .attr("fill", "none")
         .attr("stroke", column.color || "#000000")
         .attr("d", newLine);
@@ -227,26 +219,44 @@ const LineChart = ({
 
       const rightCircles = leftG
         .selectAll(".left-g")
-        .data(data.filter(d => d[column.key]))
+        .data(seriesData)
         .enter()
         .append("circle")
         .attr("cx", d =>
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
-        .attr("cy", d => yRightFn(d[column.key]))
+        .attr("cy", d =>
+          yRightFn(d[column.key] || (column.handleNull === "zero" && 0))
+        )
         .attr("fill", column.color)
         .transition()
         .ease(easeSin)
         .duration(400)
-        .attr("r", d => (d[column.key] ? 3 : 0));
+        .attr("r", d => (d[column.key] || column.handleNull ? 3 : 0));
     });
     // Tooltips
 
-    function onMouseOverG(event) {}
+    const tooltipDiv = select("body")
+      .append("div")
+      .attr("id", "tooltip")
+      .style("transition-property", "opacity")
+      .style("transition-duration", "1000")
+      .style("position", "absolute");
+
+    tooltipDiv.attr("class", `tooltip ${tooltip.className || ""}`);
+    tooltip.style &&
+      Object.entries(tooltip.style).map(([key, value]) =>
+        tooltipDiv.style(key, value)
+      );
+
+    function onMouseOverG(event) {
+      tooltip && tooltipDiv.style("opacity", 1);
+    }
 
     function onMouseLeave(event) {
-      selectAll(".tooltip").remove();
       selectAll(".axisPointLine").remove();
+
+      tooltip && tooltipDiv.style("opacity", "0");
     }
 
     function drawHLine(x, y, direction = "left") {
@@ -274,6 +284,7 @@ const LineChart = ({
 
     function onMouseMove(event) {
       selectAll(".axisPointLine").remove();
+
       const [cX, cY] = pointer(event, this);
 
       const xValue = d =>
@@ -282,32 +293,49 @@ const LineChart = ({
       const xDistances = data.map(d => Math.abs(xValue(d) - cX));
       const closestPoint = minIndex(xDistances);
       const dataClosest = data[closestPoint];
-
       const dataLeft = allLeftY.map(column => dataClosest[column.key]);
       const dataRight = allRightY.map(column => dataClosest[column.key]);
 
-      drawVLine(
-        xValue(dataClosest),
-        max([
-          yLeftFn && yLeftFn(max(dataLeft)),
-          yRightFn && yRightFn(max(dataRight))
-        ])
-      );
+      if (showGuidelines) {
+        drawVLine(
+          xValue(dataClosest),
+          max([
+            yLeftFn && yLeftFn(max(dataLeft)),
+            yRightFn && yRightFn(max(dataRight))
+          ])
+        );
 
-      dataLeft.map(
-        yValue => yValue && drawHLine(xValue(dataClosest), yLeftFn(yValue))
-      );
-      dataRight.map(
-        yValue =>
-          yValue && drawHLine(xValue(dataClosest), yRightFn(yValue), "right")
-      );
+        dataLeft.map(
+          yValue => yValue && drawHLine(xValue(dataClosest), yLeftFn(yValue))
+        );
+        dataRight.map(
+          yValue =>
+            yValue && drawHLine(xValue(dataClosest), yRightFn(yValue), "right")
+        );
+      }
+
+      tooltip && moveTooltip(event, dataClosest);
     }
 
-    showGuidelines &&
-      svg
-        .on("mouseenter", onMouseOverG)
-        .on("mousemove", onMouseMove)
-        .on("mouseleave", onMouseLeave);
+    const moveTooltip = (event, row) => {
+      const [bX, bY] = pointer(event, select("body"));
+
+      tooltipDiv.style("left", `${bX + 10}px`).style("top", `${bY + 10}px`);
+      tooltipDiv.html(
+        tooltip.html
+          ? tooltip.html(row)
+          : tooltip.keys
+          ? tooltip.keys.map(key => `${key}: ${row[key] || ""}`).join("<br/>")
+          : Object.entries(row)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join("<br/>")
+      );
+    };
+
+    svg
+      .on("mouseover", onMouseOverG)
+      .on("mousemove", onMouseMove)
+      .on("mouseleave", onMouseLeave);
   };
 
   useEffect(() => {
@@ -343,9 +371,15 @@ LineChart.propTypes = {
       start: PropTypes.number,
       end: PropTypes.number,
       ticks: PropTypes.number,
-      color: PropTypes.oneOfType([PropTypes.string, PropTypes.func])
+      color: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+      handleNull: PropTypes.oneOf(["zero"])
     })
   ),
+  tooltip: PropTypes.shape({
+    keys: PropTypes.arrayOf(PropTypes.string),
+    className: PropTypes.string,
+    html: PropTypes.func
+  }),
   width: PropTypes.number,
   height: PropTypes.number,
   marginLeft: PropTypes.number,

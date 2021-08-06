@@ -25,11 +25,21 @@ stories.add("Basic Scatterplot", () => {
       id="random-scatter"
       data={data}
       x={{ key: "independant", axisTicks: 10, start: 0, end: 600 }}
-      y={{ key: "dependant", axisTicks: 10, start: 0, end: 2000 }}
+      y={{
+        key: "dependant",
+        axisTicks: 10,
+        start: 0,
+        end: 2000
+      }}
       size={{ key: "sizeVariable", scale: "sqrt", min: 1, max: 2 }}
       color={{ key: "category", map: colorMap }}
       style={{ opacity: "0.5" }}
-      className="bg-white"
+      tooltip={{
+        html: row =>
+          `<div class="m-2 p-2 rounded" style="background-color: ${
+            colorMap[row.category]
+          }">${row.sizeVariable}</div>`
+      }}
       width={480}
       height={300}
     />
