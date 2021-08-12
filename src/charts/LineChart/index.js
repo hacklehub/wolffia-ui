@@ -422,8 +422,8 @@ const LineChart = props => {
             .attr("stroke-dashoffset", 0);
         }
 
-        const circles = leftG
-          .selectAll(".left-g")
+        const circles = rightG
+          .selectAll(".right-g")
           .data(seriesData)
           .enter()
           .append("path")
