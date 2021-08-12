@@ -165,6 +165,7 @@ const ScatterPlot = ({
         .domain(Object.keys(shape.map))
         .range(Object.values(shape.map).map(shape => shapeMapping[shape]));
 
+    // Todo Add brushing
     // Tooltips
 
     const tooltipDiv = select("body")

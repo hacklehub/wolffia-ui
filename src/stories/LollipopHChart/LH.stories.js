@@ -3,7 +3,7 @@ import React, { useState, lazy, Suspense } from "react";
 // Storybook
 import { storiesOf } from "@storybook/react";
 
-import LollipopHorizontalChart from "../../charts/LollipopHorizontalChart";
+import LollipopHorizontalChart from "../../charts/LollipopHChart";
 
 import { DateTime } from "luxon";
 
@@ -14,7 +14,7 @@ stories.add("Simple Lollipop Horizontal", () => {
     { reading: 110, name: "Category 1" },
     { reading: 100, name: "Category 2" },
     { reading: 80, name: "Category 3" },
-    { reading: 90, name: "Categoty 4" }
+    { reading: 90, name: "Category 4" }
   ];
 
   return (
@@ -24,8 +24,8 @@ stories.add("Simple Lollipop Horizontal", () => {
           data={data}
           id="lollipop-horizontal"
           value="reading"
+          valueMin={0}
           label="name"
-          className="bg-white rounded"
         />
       </div>
     </>

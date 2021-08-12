@@ -26,9 +26,10 @@ stories.add("Basic Scatterplot", () => {
     <ScatterPlot
       id="random-scatter"
       data={data}
-      x={{ key: "independant", axisTicks: 10 }}
+      x={{ key: "independant", axisTicks: 10, start: 0 }}
       y={{
         key: "dependant",
+        start: 0,
         axisTicks: 10
       }}
       shape={{ key: "category", map: shapeMap }}
