@@ -535,6 +535,35 @@ stories.add("Reference Lines", () => {
   );
 });
 
+stories.add("Zoom", () => {
+  return (
+    <>
+      <div>
+        <LineChart
+          id="horiz-refer-chart"
+          data={data}
+          x={{ key: "id", axisLabel: "Position" }}
+          y={[
+            {
+              key: "value",
+              axis: "left",
+              start: 0,
+              className: "stroke-current text-red-500"
+            },
+            {
+              key: "reading",
+              className: "stroke-current text-green-500"
+            }
+          ]}
+          paddingLeft={15}
+          // tooltip={{ keys: ["id", "value", "reading"] }}
+          zoom={true}
+        />
+      </div>
+    </>
+  );
+});
+
 stories.add("Time series", () => {
   const arrayLength = 50;
   const newData = new Array(arrayLength).fill("").map((_, index) => ({
@@ -583,6 +612,7 @@ stories.add("Time series", () => {
           }
         }}
         paddingBottom={10}
+        zoom={true}
         referenceLines={[
           {
             x: DateTime.now()

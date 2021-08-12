@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 
 import { select, pointer, selectAll } from "d3-selection";
 import { scaleTime, scaleLinear } from "d3-scale";
+import { brushX } from "d3-brush";
 import { max, min, minIndex } from "d3-array";
 import {
   curveStep,
@@ -42,6 +43,7 @@ const LineChart = props => {
     x,
     y,
     tooltip,
+    zoom,
     width = 490,
     height = 200,
     paddingLeft = 0,
@@ -74,26 +76,19 @@ const LineChart = props => {
       default: curveLinear
     };
 
-    const allLeftY = y.filter(column => column.axis !== "right"),
-      allRightY = y.filter(column => column.axis === "right");
-
-    const toDateTime = d => DateTime.fromFormat(d[x.key], x.format);
-    const svg = select(`#${id}`);
-    // Clear svg
-
-    svg.selectAll("*").remove();
-
-    const xFn =
+    /**
+     *
+     * @param {scaleLinear} xFunction
+     */
+    const setDefaultXDomain = xFunction => {
       x.scalingFunction === "time"
-        ? scaleTime()
-            .domain([
-              Number.isFinite(x.start)
-                ? x.start
-                : min(data.map(d => toDateTime(d))),
-              Number.isFinite(x.end) ? x.end : max(data.map(d => toDateTime(d)))
-            ])
-            .nice()
-        : scaleLinear().domain([
+        ? xFunction.domain([
+            Number.isFinite(x.start)
+              ? x.start
+              : min(data.map(d => toDateTime(d))),
+            Number.isFinite(x.end) ? x.end : max(data.map(d => toDateTime(d)))
+          ])
+        : xFunction.domain([
             Number.isFinite(x.start)
               ? x.start
               : !x.convert
@@ -105,6 +100,21 @@ const LineChart = props => {
               ? max(data.map(d => x.convert(d)))
               : max(data.map(d => d[x.key]))
           ]);
+    };
+
+    const allLeftY = y.filter(column => column.axis !== "right"),
+      allRightY = y.filter(column => column.axis === "right");
+
+    const toDateTime = d => DateTime.fromFormat(d[x.key], x.format);
+    const svg = select(`#${id}`);
+    // Clear svg
+
+    svg.selectAll("*").remove();
+
+    const xFn =
+      x.scalingFunction === "time" ? scaleTime().nice() : scaleLinear();
+
+    setDefaultXDomain(xFn);
     xFn.range([marginLeft + paddingLeft, width + marginLeft]);
 
     const xAxis =
@@ -170,7 +180,7 @@ const LineChart = props => {
         .filter(column => column.axisLabel)
         .map(column => column.axisLabel);
 
-    const xAxisG = g.append("g").attr("class", "axis--x axis");
+    const xAxisG = g.append("g").attr("class", "axis--x axis ");
 
     xAxisG
       .attr(
@@ -178,7 +188,7 @@ const LineChart = props => {
         `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
       )
       .transition()
-      .duration(100)
+      .duration(400)
       .call(xAxis);
 
     paddingLeft &&
@@ -220,7 +230,7 @@ const LineChart = props => {
         .attr("class", "axis axis--left-y")
         .attr("transform", `translate(${marginLeft},0)`);
 
-    yLeftAxisG.transition().duration(100).call(yLeftAxis);
+    yLeftAxisG.transition().duration(400).call(yLeftAxis);
 
     paddingBottom &&
       yLeftAxisG
@@ -271,142 +281,207 @@ const LineChart = props => {
         .attr("y", marginTop - 5)
         .style("font-size", "1.1em");
 
-    // Todo Brush zooming
+    // Add brushing
 
-    // Draw left axis values
-    const leftG = g.append("g").attr("class", "left-g");
+    if (zoom) {
+      const updateChart = (event, d) => {
+        const extent = event.selection;
 
-    allLeftY.map(column => {
-      const seriesData = data.filter(
-        d => Number.isFinite(d[column.key]) || column.unknown === "zero"
-      );
+        if (extent) {
+          xFn.domain([xFn.invert(extent[0]), xFn.invert(extent[1])]);
+          select(".brush").call(brush.move, null);
+        }
 
-      const columnCurve = curveMapping[column.curve] || curveMapping["default"];
+        xAxisG.transition().duration(400).call(xAxis);
+        selectAll(".left-g").remove();
+        selectAll(".right-g").remove();
+        selectAll(".reference-line").remove();
+        drawLeftSeries();
+        drawRightSeries();
+        drawReferenceLines();
+      };
 
-      const newLine = line()
-        .x(d =>
-          x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
-        )
-        .y(d => yLeftFn(d[column.key] || (column.unknown === "zero" && 0)))
-        .curve(columnCurve || curveLinear);
+      // Add a clipPath: everything out of this area won't be drawn.
+      const clipPath = svg
+        .append("defs")
+        .append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("x", marginLeft)
+        .attr("y", marginTop);
 
-      const seriesPath = leftG
-        .append("path")
-        .attr("class", `stroke-current ${column.className || ""}`)
-        .datum(seriesData)
-        .attr("fill", "none")
-        .attr("d", newLine);
+      const brush = brushX() // Add the brush feature using the d3.brush function
+        .extent([
+          [marginLeft, marginTop],
+          [width + marginLeft, height + marginTop - 1]
+        ]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
+        .on("end", updateChart);
 
-      if (column.transition !== "none") {
-        const pathLength = seriesPath.node().getTotalLength();
+      // Add the line
 
-        seriesPath
-          .attr("stroke-dashoffset", pathLength)
-          .attr("stroke-dasharray", pathLength)
-          .transition(transition().ease(easeSin).duration(600))
-          .attr("stroke-dashoffset", 0);
-      }
+      // Add the brushing
+      svg.append("g").attr("class", "brush").call(brush);
+    }
 
-      const leftCircles = leftG
-        .selectAll(".left-g")
-        .data(seriesData)
-        .enter()
-        .append("path")
-        .attr(
-          "d",
-          symbol()
-            .type(shapeMapping[column.symbol] || symbolCircle)
-            .size(column.size || 16)
-        )
-        .attr("class", `${column.className} fill-current`)
-        .attr(
-          "transform",
-          d =>
-            `translate(${
-              x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
-            },${yLeftFn(d[column.key] || (column.unknown === "zero" && 0))})`
+    const drawLeftSeries = () => {
+      // Draw left axis values
+
+      const leftG = g.append("g").attr("class", "left-g");
+
+      allLeftY.map(column => {
+        const seriesData = data.filter(
+          d => Number.isFinite(d[column.key]) || column.unknown === "zero"
         );
-    });
 
-    const rightG = g.append("g");
-    allRightY.map(column => {
-      const newLine = line()
-        .x(d =>
-          x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
-        )
-        .y(d => yRightFn(d[column.key] || (column.unknown === "zero" && 0)))
-        .curve(column.curve || curveLinear);
+        const columnCurve =
+          curveMapping[column.curve] || curveMapping["default"];
 
-      const seriesData = data.filter(
-        d => Number.isFinite(d[column.key]) || column.unknown === "zero"
-      );
-      const seriesPath = rightG
-        .append("path")
-        .attr("class", `stroke-current ${column.className || ""}`)
-        .datum(seriesData)
-        .attr("fill", "none")
-        .attr("d", newLine);
+        const newLine = line()
+          .x(d =>
+            x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+          )
+          .y(d => yLeftFn(d[column.key] || (column.unknown === "zero" && 0)))
+          .curve(columnCurve || curveLinear);
 
-      if (column.transition !== "none") {
-        const pathLength = seriesPath.node().getTotalLength();
+        const seriesPath = leftG
+          .append("path")
+          .attr("class", `left-series stroke-current ${column.className || ""}`)
+          .datum(seriesData)
+          .attr("fill", "none")
+          .attr("clip-path", "url(#clip)")
+          .attr("d", newLine);
 
-        seriesPath
-          .attr("stroke-dashoffset", pathLength)
-          .attr("stroke-dasharray", pathLength)
-          .transition(transition().ease(easeSin).duration(600))
-          .attr("stroke-dashoffset", 0);
-      }
+        if (column.transition !== "none") {
+          const pathLength = seriesPath.node().getTotalLength();
 
-      const circles = leftG
-        .selectAll(".left-g")
-        .data(seriesData)
-        .enter()
-        .append("path")
-        .attr(
-          "d",
-          symbol()
-            .type(shapeMapping[column.symbol] || symbolCircle)
-            .size(column.size || 16)
-        )
-        .attr("class", `${column.className} fill-current`)
-        .attr(
-          "transform",
-          d =>
-            `translate(${
-              x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
-            },${yRightFn(d[column.key] || (column.unknown === "zero" && 0))})`
+          seriesPath
+            .attr("stroke-dashoffset", pathLength)
+            .attr("stroke-dasharray", pathLength)
+            // Disable transitions
+            .transition(transition().ease(easeSin).duration(400))
+            .attr("stroke-dashoffset", 0);
+        }
+
+        const leftCircles = leftG
+          .selectAll(".left-g")
+          .data(seriesData)
+          .enter()
+          .append("path")
+          .attr(
+            "d",
+            symbol()
+              .type(shapeMapping[column.symbol] || symbolCircle)
+              .size(column.size || 16)
+          )
+          .attr("class", `${column.className} fill-current`)
+          .attr(
+            "transform",
+            d =>
+              `translate(${
+                x.scalingFunction === "time"
+                  ? xFn(toDateTime(d))
+                  : xFn(d[x.key])
+              },${yLeftFn(d[column.key] || (column.unknown === "zero" && 0))})`
+          );
+      });
+    };
+
+    const drawRightSeries = () => {
+      const rightG = g.append("g");
+      allRightY.map(column => {
+        const newLine = line()
+          .x(d =>
+            x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+          )
+          .y(d => yRightFn(d[column.key] || (column.unknown === "zero" && 0)))
+          .curve(column.curve || curveLinear);
+
+        const seriesData = data.filter(
+          d => Number.isFinite(d[column.key]) || column.unknown === "zero"
         );
-    });
+        const seriesPath = rightG
+          .append("path")
+          .attr(
+            "class",
+            `right-series stroke-current ${column.className || ""}`
+          )
+          .datum(seriesData)
+          .attr("fill", "none")
+          .attr("clip-path", "url(#clip)")
+          .attr("d", newLine);
 
-    referenceLines.map(object => {
-      // const { x, yLeft, yRight, className } = object;
+        if (column.transition !== "none") {
+          const pathLength = seriesPath.node().getTotalLength();
 
-      object.x &&
-        drawVLine({
-          x:
-            x.scalingFunction === "time"
-              ? xFn(toDateTime({ [x.key]: object.x }))
-              : xFn(object.x),
-          y: marginTop,
-          className: `${object.className || ""} reference-line`
-        });
+          seriesPath
+            .attr("stroke-dashoffset", pathLength)
+            .attr("stroke-dasharray", pathLength)
+            .transition(transition().ease(easeSin).duration(400))
+            .attr("stroke-dashoffset", 0);
+        }
 
-      object.yLeft &&
-        drawHLine({
-          y: yLeftFn(object.yLeft),
-          x: marginLeft,
-          className: `${object.className || ""} reference-line`,
-          direction: "right"
-        });
+        const circles = leftG
+          .selectAll(".left-g")
+          .data(seriesData)
+          .enter()
+          .append("path")
+          .attr("clip-path", "url(#clip)")
+          .attr(
+            "d",
+            symbol()
+              .type(shapeMapping[column.symbol] || symbolCircle)
+              .size(column.size || 16)
+          )
+          .attr("class", `${column.className} fill-current`)
+          .attr(
+            "transform",
+            d =>
+              `translate(${
+                x.scalingFunction === "time"
+                  ? xFn(toDateTime(d))
+                  : xFn(d[x.key])
+              },${yRightFn(d[column.key] || (column.unknown === "zero" && 0))})`
+          );
+      });
+    };
 
-      object.yRight &&
-        drawHLine({
-          y: yRightFn(object.yRight),
-          x: marginLeft,
-          className: `${object.className || ""} reference-line`,
-          direction: "right"
-        });
-    });
+    const drawReferenceLines = () => {
+      referenceLines.map(object => {
+        // const { x, yLeft, yRight, className } = object;
+
+        object.x &&
+          drawVLine({
+            x:
+              x.scalingFunction === "time"
+                ? xFn(toDateTime({ [x.key]: object.x }))
+                : xFn(object.x),
+            y: marginTop,
+            className: `${object.className || ""} reference-line`
+          });
+
+        object.yLeft &&
+          drawHLine({
+            y: yLeftFn(object.yLeft),
+            x: marginLeft,
+            className: `${object.className || ""} reference-line`,
+            direction: "right"
+          });
+
+        object.yRight &&
+          drawHLine({
+            y: yRightFn(object.yRight),
+            x: marginLeft,
+            className: `${object.className || ""} reference-line`,
+            direction: "right"
+          });
+      });
+    };
+
+    drawLeftSeries();
+    drawRightSeries();
+    drawReferenceLines();
 
     const xValue = d =>
       x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key]);
@@ -531,7 +606,16 @@ const LineChart = props => {
     svg
       .on("mouseover", onMouseOverG)
       .on("mousemove", onMouseMove)
-      .on("mouseleave", onMouseLeave);
+      .on("mouseleave", onMouseLeave)
+      .on("dblclick", () => {
+        setDefaultXDomain(xFn);
+        selectAll(".left-g").remove();
+        selectAll(".right-g").remove();
+        selectAll(".reference-line").remove();
+        drawLeftSeries();
+        drawRightSeries();
+        drawReferenceLines();
+      });
   };
 
   useEffect(() => {
@@ -604,6 +688,7 @@ LineChart.propTypes = {
   paddingBottom: PropTypes.number,
 
   // Todo duration of transition
+  zoom: PropTypes.bool,
   transitionDuration: PropTypes.number,
   // Decorators
   tooltip: PropTypes.shape({
