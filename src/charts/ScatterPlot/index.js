@@ -34,6 +34,10 @@ const ScatterPlot = ({
   marginRight = 40,
   marginTop = 40,
   marginBottom = 40,
+  paddingLeft = 0,
+  paddingRight = 0,
+  paddingBottom = 0,
+  paddingTop = 0,
   style = {}
 }) => {
   const refreshChart = () => {
@@ -57,7 +61,7 @@ const ScatterPlot = ({
           ? max(data.map(d => x.convert(d)))
           : max(data.map(d => d[x.key]))
       ])
-      .range([marginLeft, width + marginLeft]);
+      .range([marginLeft + paddingLeft, width + marginLeft]);
 
     const xAxis = (x.axis === "top" ? axisTop(xFn) : axisBottom(xFn)).ticks(
       x.axisTicks || 5
@@ -76,31 +80,57 @@ const ScatterPlot = ({
           ? max(data.map(d => y.convert(d)))
           : max(data.map(d => d[y.key]))
       ])
-      .range([height + marginTop, marginTop]);
+      .range([height + marginTop - paddingBottom, marginTop + paddingTop]);
 
     const yAxis = (y.axis === "right" ? axisRight(yFn) : axisLeft(yFn)).ticks(
       y.axisTicks || 5
     );
 
-    g.append("g")
+    const xAxisG = g
+      .append("g")
       .attr("class", "xAxis axis")
       .attr(
         "transform",
         `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
-      )
-      .transition()
-      .duration(400)
-      .call(xAxis);
+      );
 
-    g.append("g")
+    xAxisG.transition().duration(400).call(xAxis);
+
+    paddingLeft &&
+      xAxisG
+        .append("line")
+        .attr("x1", marginLeft)
+        .attr("x2", marginLeft + paddingLeft)
+        .attr("y1", 0)
+        .attr("y2", 0)
+        .attr("stroke", "currentColor");
+
+    paddingRight &&
+      xAxisG
+        .append("line")
+        .attr("x1", marginLeft + width)
+        .attr("x2", marginLeft + width + paddingRight)
+        .attr("y1", 0)
+        .attr("y2", 0)
+        .attr("stroke", "currentColor");
+
+    const yAxisG = g
+      .append("g")
       .attr("class", "yAxis axis")
       .attr(
         "transform",
         `translate(${y.axis === "right" ? marginLeft + width : marginLeft},0)`
-      )
-      .transition()
-      .duration(400)
-      .call(yAxis);
+      );
+
+    yAxisG.transition().duration(400).call(yAxis);
+    paddingBottom &&
+      yAxisG
+        .append("line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", marginTop + height - paddingBottom)
+        .attr("y2", marginTop + height)
+        .attr("stroke", "currentColor");
 
     const sizeScale = size && scaleLinear();
 
@@ -197,7 +227,12 @@ const ScatterPlot = ({
 
     function onMouseLeave(event) {
       // selectAll(".axisPointLine").remove();
-      tooltip && tooltipDiv.style("opacity", "0");
+      tooltip &&
+        tooltipDiv
+          .transition()
+          .duration(400)
+          .style("opacity", "0")
+          .style("padding", "0px");
     }
 
     //Add styles from style prop
@@ -228,7 +263,11 @@ ScatterPlot.propTypes = {
   marginLeft: PropTypes.number,
   marginRight: PropTypes.number,
   marginTop: PropTypes.number,
-  marginBottom: PropTypes.number
+  marginBottom: PropTypes.number,
+  paddingLeft: PropTypes.number,
+  paddingRight: PropTypes.number,
+  paddingTop: PropTypes.number,
+  paddingBottom: PropTypes.number
 };
 
 export default ScatterPlot;

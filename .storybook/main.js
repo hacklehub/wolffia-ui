@@ -3,6 +3,7 @@ const path = require("path");
 module.exports = {
   stories: ["../src/stories/**/*.stories.js"],
   addons: [
+    "storybook-dark-mode",
     "@storybook/addon-actions/register",
     {
       name: "@storybook/addon-postcss",

@@ -9,9 +9,9 @@ const stories = storiesOf("ScatterPlots", module);
 stories.add("Basic Scatterplot", () => {
   const randBetween = (x, y) => Math.floor(x + Math.random() * (y - x));
 
-  const categories = ["UDF", "LDF"];
+  const categories = ["Category A", "Category B"];
 
-  const colorMap = { UDF: "#0099FF", LDF: "#FF5252" };
+  const colorMap = { "Category A": "#0099FF", "Category B": "#FF5252" };
 
   const data = new Array(50).fill("").map(v => ({
     dependant: randBetween(1000, 1500),
@@ -26,12 +26,10 @@ stories.add("Basic Scatterplot", () => {
     <ScatterPlot
       id="random-scatter"
       data={data}
-      x={{ key: "independant", axisTicks: 10, start: 0, end: 600 }}
+      x={{ key: "independant", axisTicks: 10 }}
       y={{
         key: "dependant",
-        axisTicks: 10,
-        start: 0,
-        end: 2000
+        axisTicks: 10
       }}
       shape={{ key: "category", map: shapeMap }}
       size={{ key: "sizeVariable", min: 10, max: 40 }}
@@ -45,6 +43,8 @@ stories.add("Basic Scatterplot", () => {
       }}
       width={480}
       height={300}
+      paddingBottom={10}
+      paddingLeft={10}
     />
   );
 });

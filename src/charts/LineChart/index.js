@@ -6,9 +6,15 @@ import { scaleTime, scaleLinear } from "d3-scale";
 import { max, min, minIndex } from "d3-array";
 import {
   curveStep,
+  curveCatmullRom,
   curveLinear,
   line,
   symbol,
+  symbolCross,
+  symbolStar,
+  symbolTriangle,
+  symbolSquare,
+  symbolWye,
   symbolDiamond,
   symbolCircle
 } from "d3-shape";
@@ -18,22 +24,56 @@ import { easeSin } from "d3-ease";
 import { transition } from "d3-transition";
 import { DateTime } from "luxon";
 
-const LineChart = ({
-  data = [],
-  id,
-  className,
-  x,
-  y,
-  tooltip,
-  width = 490,
-  height = 200,
-  marginLeft = 40,
-  marginRight = 40,
-  marginTop = 40,
-  marginBottom = 40,
-  showGuidelines = false
-}) => {
+/**
+ * Display a line chart
+ *
+ * @param {Object} parameters All parameters
+ * @param {object[]} parameters.data Data to be passed
+ * @param {string} parameters.id Id of the chart
+ * @param {string} parameters.className classNames to be assigned to the LineChart svg
+ *
+ */
+
+const LineChart = props => {
+  const {
+    data = [],
+    id,
+    className,
+    x,
+    y,
+    tooltip,
+    width = 490,
+    height = 200,
+    paddingLeft = 0,
+    paddingRight = 0,
+    paddingBottom = 0,
+    paddingTop = 0,
+    marginLeft = 40,
+    marginRight = 40,
+    marginTop = 40,
+    marginBottom = 40,
+    showGuidelines = false,
+    referenceLines = []
+  } = props;
   const refreshChart = async () => {
+    const shapeMapping = {
+      circle: symbolCircle,
+      diamond: symbolDiamond,
+      triangle: symbolTriangle,
+      square: symbolSquare,
+      cross: symbolCross,
+      star: symbolStar,
+      wye: symbolWye,
+      default: symbolCircle
+    };
+
+    const curveMapping = {
+      rounded: curveCatmullRom,
+      step: curveStep,
+      line: curveLinear,
+      default: curveLinear
+    };
+
     const allLeftY = y.filter(column => column.axis !== "right"),
       allRightY = y.filter(column => column.axis === "right");
 
@@ -65,7 +105,7 @@ const LineChart = ({
               ? max(data.map(d => x.convert(d)))
               : max(data.map(d => d[x.key]))
           ]);
-    xFn.range([marginLeft, width + marginLeft]);
+    xFn.range([marginLeft + paddingLeft, width + marginLeft]);
 
     const xAxis =
       x.axis === "top"
@@ -95,7 +135,7 @@ const LineChart = ({
       allLeftY.length > 0 &&
       scaleLinear()
         .domain([minLeftYs, maxLeftYs])
-        .range([height + marginTop, marginTop]);
+        .range([height + marginTop - paddingBottom, marginTop + paddingTop]);
 
     const yLeftAxis =
       allLeftY.length > 0 && axisLeft(yLeftFn).ticks(minTicksLeft || 5);
@@ -117,13 +157,22 @@ const LineChart = ({
       allRightY.length > 0 &&
       scaleLinear()
         .domain([minRightYs, maxRightYs])
-        .range([height + marginTop, marginTop]);
+        .range([height + marginTop - paddingBottom, marginTop + paddingTop]);
 
     const yRightAxis = allRightY.length > 0 && axisRight(yRightFn);
 
-    const xAxisG = g
-      .append("g")
-      .attr("class", "axis--x axis")
+    const yLeftLabels =
+      allLeftY.length > 0 && allLeftY.map(column => column.axisLabel);
+
+    const yRightLabels =
+      allRightY.length > 0 &&
+      allRightY
+        .filter(column => column.axisLabel)
+        .map(column => column.axisLabel);
+
+    const xAxisG = g.append("g").attr("class", "axis--x axis");
+
+    xAxisG
       .attr(
         "transform",
         `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
@@ -132,21 +181,95 @@ const LineChart = ({
       .duration(100)
       .call(xAxis);
 
-    yLeftAxis &&
+    paddingLeft &&
+      xAxisG
+        .append("line")
+        .attr("x1", marginLeft)
+        .attr("x2", marginLeft + paddingLeft)
+        .attr("y1", 0)
+        .attr("y2", 0)
+        .attr("stroke", "currentColor");
+
+    paddingRight &&
+      xAxisG
+        .append("line")
+        .attr("x1", marginLeft + width)
+        .attr("x2", marginLeft + width + paddingRight)
+        .attr("y1", 0)
+        .attr("y2", 0)
+        .attr("stroke", "currentColor");
+
+    x.axisLabel &&
+      xAxisG
+        .append("text")
+        .text(x.axisLabel)
+        .attr("fill", "currentColor")
+        .attr(
+          "x",
+          x.axisLabelPosition === "right"
+            ? marginLeft + width + 15
+            : marginLeft + width / 2
+        )
+        .attr("y", marginTop - 10)
+        .style("font-size", "1.1em");
+
+    const yLeftAxisG =
+      yLeftAxis &&
       g
         .append("g")
         .attr("class", "axis axis--left-y")
-        .attr("transform", `translate(${marginLeft},0)`)
-        .transition()
-        .duration(100)
-        .call(yLeftAxis);
+        .attr("transform", `translate(${marginLeft},0)`);
 
-    yRightAxis &&
+    yLeftAxisG.transition().duration(100).call(yLeftAxis);
+
+    paddingBottom &&
+      yLeftAxisG
+        .append("line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", marginTop + height - paddingBottom)
+        .attr("y2", marginTop + height)
+        .attr("stroke", "currentColor");
+
+    const yRightAxisG =
+      yRightAxis &&
       g
         .append("g")
         .attr("class", "axis axis--right-y")
-        .attr("transform", `translate(${width + marginLeft},0)`)
-        .call(yRightAxis);
+        .attr("transform", `translate(${width + marginLeft},0)`);
+
+    yRightAxisG && yRightAxisG.call(yRightAxis);
+
+    paddingBottom &&
+      yRightAxisG &&
+      yRightAxisG
+        .append("line")
+        .attr("x1", 0)
+        .attr("x2", 0)
+        .attr("y1", marginTop + height - paddingBottom)
+        .attr("y2", marginTop + height)
+        .attr("stroke", "currentColor");
+
+    yLeftLabels &&
+      yLeftLabels.length > 0 &&
+      yLeftAxisG
+        .append("text")
+        .text(yLeftLabels.join(", "))
+        .attr("fill", "currentColor")
+        .attr("text-anchor", "start")
+        .attr("x", -marginLeft)
+        .attr("y", marginTop - 5)
+        .style("font-size", "1.1em");
+
+    yRightLabels &&
+      yRightLabels.length > 0 &&
+      yRightAxisG
+        .append("text")
+        .text(yRightLabels.join(", "))
+        .attr("fill", "currentColor")
+        .attr("x", 2)
+        .attr("y", marginTop - 5)
+        .style("font-size", "1.1em");
 
     // Todo Brush zooming
 
@@ -155,21 +278,21 @@ const LineChart = ({
 
     allLeftY.map(column => {
       const seriesData = data.filter(
-        d => Number.isFinite(d[column.key]) || column.handleNull === "zero"
+        d => Number.isFinite(d[column.key]) || column.unknown === "zero"
       );
 
-      const columnCurve = column.curve === "step" && curveStep;
+      const columnCurve = curveMapping[column.curve] || curveMapping["default"];
 
       const newLine = line()
         .x(d =>
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
-        .y(d => yLeftFn(d[column.key] || (column.handleNull === "zero" && 0)))
+        .y(d => yLeftFn(d[column.key] || (column.unknown === "zero" && 0)))
         .curve(columnCurve || curveLinear);
 
       const seriesPath = leftG
         .append("path")
-        .attr("class", column.className || "stroke-current text-black")
+        .attr("class", `stroke-current ${column.className || ""}`)
         .datum(seriesData)
         .attr("fill", "none")
         .attr("d", newLine);
@@ -191,10 +314,9 @@ const LineChart = ({
         .append("path")
         .attr(
           "d",
-          // Todo other symbols
           symbol()
-            .type(column.symbol ? symbolDiamond : symbolCircle)
-            .size(16)
+            .type(shapeMapping[column.symbol] || symbolCircle)
+            .size(column.size || 16)
         )
         .attr("class", `${column.className} fill-current`)
         .attr(
@@ -202,7 +324,7 @@ const LineChart = ({
           d =>
             `translate(${
               x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
-            },${yLeftFn(d[column.key] || (column.handleNull === "zero" && 0))})`
+            },${yLeftFn(d[column.key] || (column.unknown === "zero" && 0))})`
         );
     });
 
@@ -212,15 +334,15 @@ const LineChart = ({
         .x(d =>
           x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
         )
-        .y(d => yRightFn(d[column.key] || (column.handleNull === "zero" && 0)))
+        .y(d => yRightFn(d[column.key] || (column.unknown === "zero" && 0)))
         .curve(column.curve || curveLinear);
 
       const seriesData = data.filter(
-        d => Number.isFinite(d[column.key]) || column.handleNull === "zero"
+        d => Number.isFinite(d[column.key]) || column.unknown === "zero"
       );
       const seriesPath = rightG
         .append("path")
-        .attr("class", column.className || "stroke-current text-black")
+        .attr("class", `stroke-current ${column.className || ""}`)
         .datum(seriesData)
         .attr("fill", "none")
         .attr("d", newLine);
@@ -235,17 +357,16 @@ const LineChart = ({
           .attr("stroke-dashoffset", 0);
       }
 
-      const rightCircles = leftG
+      const circles = leftG
         .selectAll(".left-g")
         .data(seriesData)
         .enter()
         .append("path")
         .attr(
           "d",
-          // Todo other symbols
           symbol()
-            .type(column.symbol ? symbolDiamond : symbolCircle)
-            .size(16)
+            .type(shapeMapping[column.symbol] || symbolCircle)
+            .size(column.size || 16)
         )
         .attr("class", `${column.className} fill-current`)
         .attr(
@@ -253,18 +374,53 @@ const LineChart = ({
           d =>
             `translate(${
               x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
-            },${yLeftFn(d[column.key] || (column.handleNull === "zero" && 0))})`
+            },${yRightFn(d[column.key] || (column.unknown === "zero" && 0))})`
         );
     });
+
+    referenceLines.map(object => {
+      // const { x, yLeft, yRight, className } = object;
+
+      object.x &&
+        drawVLine({
+          x:
+            x.scalingFunction === "time"
+              ? xFn(toDateTime({ [x.key]: object.x }))
+              : xFn(object.x),
+          y: marginTop,
+          className: `${object.className || ""} reference-line`
+        });
+
+      object.yLeft &&
+        drawHLine({
+          y: yLeftFn(object.yLeft),
+          x: marginLeft,
+          className: `${object.className || ""} reference-line`,
+          direction: "right"
+        });
+
+      object.yRight &&
+        drawHLine({
+          y: yRightFn(object.yRight),
+          x: marginLeft,
+          className: `${object.className || ""} reference-line`,
+          direction: "right"
+        });
+    });
+
+    const xValue = d =>
+      x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key]);
     // Tooltips
 
     const tooltipDiv = select("body")
       .append("div")
       .attr("id", "tooltip")
-      .style("position", "absolute");
+      .style("position", "absolute")
+      .style("opacity", "0")
+      .attr("class", `tooltip ${(tooltip && tooltip.className) || ""}`);
 
-    tooltipDiv.attr("class", `tooltip ${tooltip.className || ""}`);
-    tooltip.style &&
+    tooltip &&
+      tooltip.style &&
       Object.entries(tooltip.style).map(([key, value]) =>
         tooltipDiv.style(key, value)
       );
@@ -279,36 +435,42 @@ const LineChart = ({
       tooltip && tooltipDiv.style("opacity", "0");
     }
 
-    function drawHLine(x, y, direction = "left") {
-      g.append("line")
-        .attr("class", "axisPointLine")
+    function drawHLine({
+      x,
+      y,
+      direction = "left",
+      className,
+      dashed = false
+    }) {
+      const horizontalLine = g
+        .append("line")
+        .attr("class", className || "axisPointLine")
         .attr("x1", direction === "left" ? marginLeft : x)
         .attr("x2", direction === "left" ? x : width + marginLeft)
         .attr("y1", y)
         .attr("y2", y)
+
         .attr("stroke", "#dddddd")
-        .style("stroke-width", 1)
-        .style("stroke-dasharray", "10,5");
+        .style("stroke-width", 1);
+      dashed && horizontalLine.style("stroke-dasharray", "10,5");
     }
-    function drawVLine(x, y) {
-      g.append("line")
-        .attr("class", "axisPointLine")
+    function drawVLine({ x, y, className, dashed }) {
+      const verticalLine = g
+        .append("line")
+        .attr("class", className || "axisPointLine")
         .attr("x1", x)
         .attr("x2", x)
         .attr("y1", y)
         .attr("y2", height + marginTop)
-        .attr("stroke", "#dddddd")
-        .style("stroke-width", 1)
-        .style("stroke-dasharray", "10,5");
+        .attr("stroke", "currentColor")
+        .style("stroke-width", 1);
+      dashed && verticalLine.style("stroke-dasharray", "10,7");
     }
 
     function onMouseMove(event) {
       selectAll(".axisPointLine").remove();
 
       const [cX, cY] = pointer(event, this);
-
-      const xValue = d =>
-        x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key]);
 
       const xDistances = data.map(d => Math.abs(xValue(d) - cX));
       const closestPoint = minIndex(xDistances);
@@ -317,20 +479,34 @@ const LineChart = ({
       const dataRight = allRightY.map(column => dataClosest[column.key]);
 
       if (showGuidelines) {
-        drawVLine(
-          xValue(dataClosest),
-          max([
-            yLeftFn && yLeftFn(max(dataLeft)),
-            yRightFn && yRightFn(max(dataRight))
-          ])
-        );
+        drawVLine({
+          x: xValue(dataClosest),
+          y: min([
+            (yLeftFn && yLeftFn(max(dataLeft))) || marginTop + height,
+            (yRightFn && yRightFn(max(dataRight))) || marginTop + height
+          ]),
+          className: "axisPointLine text-gray-200 stroke-current",
+          dashed: true
+        });
 
         dataLeft.map(
-          yValue => yValue && drawHLine(xValue(dataClosest), yLeftFn(yValue))
+          yValue =>
+            Number.isFinite(yValue) &&
+            drawHLine({
+              x: xValue(dataClosest),
+              y: yLeftFn(yValue),
+              dashed: true
+            })
         );
         dataRight.map(
           yValue =>
-            yValue && drawHLine(xValue(dataClosest), yRightFn(yValue), "right")
+            Number.isFinite(yValue) &&
+            drawHLine({
+              x: xValue(dataClosest),
+              y: yRightFn(yValue),
+              direction: "right",
+              dashed: true
+            })
         );
       }
 
@@ -363,21 +539,23 @@ const LineChart = ({
     return () => {
       selectAll(".tooltip").remove();
     };
-  }, [data]);
+  }, [props]);
 
   return (
     <svg
       id={id}
       className={`${className}`}
       width={width + marginLeft + marginRight}
-      height={height + marginTop + marginBottom}></svg>
+      height={height + marginTop + marginBottom}
+    />
   );
 };
 
 LineChart.propTypes = {
-  className: PropTypes.string, // Tailwind classes to be added to the chart
-  data: PropTypes.arrayOf(PropTypes.object),
+  // Data and chart choosers
+  data: PropTypes.arrayOf(PropTypes.object).isRequired,
   id: PropTypes.string.isRequired, // Need this so that chart can be selected uniquely to a page
+  // Data
   x: PropTypes.shape({
     key: PropTypes.string,
     scalingFunction: PropTypes.oneOf(["linear", "time"]),
@@ -385,6 +563,7 @@ LineChart.propTypes = {
     axis: PropTypes.oneOf(["bottom", "top"]),
     axisTicks: PropTypes.number,
     axisLabel: PropTypes.string,
+    axisLabelPosition: PropTypes.oneOf(["right, bottom"]),
     start: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
     end: PropTypes.oneOfType([PropTypes.object, PropTypes.number])
   }),
@@ -396,20 +575,50 @@ LineChart.propTypes = {
       end: PropTypes.number,
       ticks: PropTypes.number,
       className: PropTypes.string,
-      handleNull: PropTypes.oneOf(["zero"])
+      curve: PropTypes.oneOf(["rounded", "step", "line"]),
+      symbol: PropTypes.oneOf([
+        "circle",
+        "square",
+        "star",
+        "triangle",
+        "wye",
+        "cross",
+        "diamond"
+      ]),
+      size: PropTypes.number,
+      unknown: PropTypes.oneOf(["zero"])
     })
   ),
-  tooltip: PropTypes.shape({
-    keys: PropTypes.arrayOf(PropTypes.string),
-    className: PropTypes.string,
-    html: PropTypes.func
-  }),
+
+  // Styles
+  className: PropTypes.string, // Tailwind classes to be added to the chart
   width: PropTypes.number,
   height: PropTypes.number,
   marginLeft: PropTypes.number,
   marginRight: PropTypes.number,
   marginTop: PropTypes.number,
-  marginBottom: PropTypes.number
+  marginBottom: PropTypes.number,
+  paddingLeft: PropTypes.number,
+  paddingRight: PropTypes.number,
+  paddingTop: PropTypes.number,
+  paddingBottom: PropTypes.number,
+
+  // Todo duration of transition
+  transitionDuration: PropTypes.number,
+  // Decorators
+  tooltip: PropTypes.shape({
+    keys: PropTypes.arrayOf(PropTypes.string),
+    className: PropTypes.string,
+    html: PropTypes.func
+  }),
+  referenceLines: PropTypes.arrayOf(
+    PropTypes.shape({
+      x: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+      yLeft: PropTypes.number,
+      yRight: PropTypes.number,
+      className: PropTypes.string
+    })
+  )
 };
 
 export default LineChart;
