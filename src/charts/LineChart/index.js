@@ -44,7 +44,7 @@ const LineChart = props => {
     x,
     y,
     tooltip,
-    enableZoom,
+    zooming,
     width = 490,
     height = 200,
     paddingLeft = 0,
@@ -198,7 +198,7 @@ const LineChart = props => {
       xAxisG
         .append("line")
         .attr("x1", marginLeft)
-        .attr("x2", marginLeft + paddingLeft)
+        .attr("x2", marginLeft + width)
         .attr("y1", 0)
         .attr("y2", 0)
         .attr("stroke", "currentColor");
@@ -298,9 +298,13 @@ const LineChart = props => {
       .attr("class", "left-g")
       .attr("clip-path", "url(#clip)");
 
-    leftG.selectAll("g").data(data).enter().append("path");
-
     const drawLeftSeries = () => {
+      zooming &&
+        (function () {
+          selectAll(".left-series").remove();
+          selectAll(".left-circles").remove();
+        })();
+
       // Draw left axis values
 
       allLeftY.map(column => {
@@ -312,9 +316,12 @@ const LineChart = props => {
           curveMapping[column.curve] || curveMapping["default"];
 
         const newLine = line()
-          .x(d =>
-            x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key]),
-          )
+          .x(d => {
+            // console.log(xFn(d[x.key]));
+            return x.scalingFunction === "time"
+              ? xFn(toDateTime(d))
+              : xFn(d[x.key]);
+          })
           .y(d => yLeftFn(d[column.key] || (column.unknown === "zero" && 0)))
           .curve(columnCurve || curveLinear);
 
@@ -326,39 +333,32 @@ const LineChart = props => {
           .attr("clip-path", "url(#clip)")
           .attr("d", newLine);
 
-        if (column.transition !== "none") {
-          const pathLength = seriesPath.node().getTotalLength();
-
-          seriesPath
-            .attr("stroke-dashoffset", pathLength)
-            .attr("stroke-dasharray", pathLength)
-            // Disable transitions
-            .transition(transition().ease(easeSin).duration(400))
-            .attr("stroke-dashoffset", 0);
-        }
-
-        const leftCircles = leftG
-          .selectAll(".left-g")
-          .data(seriesData)
-          .enter()
-          .append("path")
-          .attr(
-            "d",
-            symbol()
-              .type(shapeMapping[column.symbol] || symbolCircle)
-              .size(column.size || 16),
-          )
-          .attr("class", `${column.className} fill-current`)
-          // .attr("clip-path", "url(#clip)")
-          .attr(
-            "transform",
-            d =>
-              `translate(${
-                x.scalingFunction === "time"
-                  ? xFn(toDateTime(d))
-                  : xFn(d[x.key])
-              },${yLeftFn(d[column.key] || (column.unknown === "zero" && 0))})`,
-          );
+        const leftCircles =
+          column.symbol !== "none" &&
+          leftG
+            .selectAll(".left-g")
+            .data(seriesData)
+            .enter()
+            .append("path")
+            .attr(
+              "d",
+              symbol()
+                .type(shapeMapping[column.symbol] || symbolCircle)
+                .size(column.size || 16),
+            )
+            .attr("class", `left-circles ${column.className} fill-current`)
+            // .attr("clip-path", "url(#clip)")
+            .attr(
+              "transform",
+              d =>
+                `translate(${
+                  x.scalingFunction === "time"
+                    ? xFn(toDateTime(d))
+                    : xFn(d[x.key])
+                },${yLeftFn(
+                  d[column.key] || (column.unknown === "zero" && 0),
+                )})`,
+            );
       });
     };
 
@@ -368,6 +368,11 @@ const LineChart = props => {
       .attr("clip-path", "url(#clip)");
 
     const drawRightSeries = () => {
+      zooming &&
+        (function () {
+          selectAll(".right-series").remove();
+          selectAll(".right-circles").remove();
+        })();
       allRightY.map(column => {
         const newLine = line()
           .x(d =>
@@ -390,16 +395,6 @@ const LineChart = props => {
           .attr("clip-path", "url(#clip)")
           .attr("d", newLine);
 
-        if (column.transition !== "none") {
-          const pathLength = seriesPath.node().getTotalLength();
-
-          seriesPath
-            .attr("stroke-dashoffset", pathLength)
-            .attr("stroke-dasharray", pathLength)
-            .transition(transition().ease(easeSin).duration(400))
-            .attr("stroke-dashoffset", 0);
-        }
-
         const circles = rightG
           .selectAll(".right-g")
           .data(seriesData)
@@ -412,7 +407,7 @@ const LineChart = props => {
               .type(shapeMapping[column.symbol] || symbolCircle)
               .size(column.size || 16),
           )
-          .attr("class", `${column.className} fill-current`)
+          .attr("class", `right-circles ${column.className} fill-current`)
           .attr(
             "transform",
             d =>
@@ -428,6 +423,7 @@ const LineChart = props => {
     };
 
     const drawReferenceLines = () => {
+      zooming && selectAll(".reference-line").remove();
       referenceLines.map(object => {
         // const { x, yLeft, yRight, className } = object;
 
@@ -442,12 +438,22 @@ const LineChart = props => {
           });
 
         object.yLeft &&
-          drawHLine({
-            y: yLeftFn(object.yLeft),
-            x: marginLeft,
-            className: `${object.className || ""} reference-line`,
-            direction: "right",
-          });
+          (function () {
+            drawHLine({
+              y: yLeftFn(object.yLeft),
+              x: marginLeft,
+              className: `${object.className || ""} reference-line`,
+              direction: "right",
+            });
+            object.showText &&
+              svg
+                .append("text")
+                .attr("class", `${object.className || ""} reference-line`)
+                .attr("x", marginLeft + paddingLeft + width - 10)
+                .attr("y", yLeftFn(object.yLeft) - 5)
+                .attr("font-size", "0.7em")
+                .text(`y = ${object.yLeft}`);
+          })();
 
         object.yRight &&
           drawHLine({
@@ -504,7 +510,7 @@ const LineChart = props => {
         .attr("x2", direction === "left" ? x : width + marginLeft)
         .attr("y1", y)
         .attr("y2", y)
-
+        .attr("clip-path", "url(#clip)")
         .attr("stroke", "#dddddd")
         .style("stroke-width", 1);
       dashed && horizontalLine.style("stroke-dasharray", "10,5");
@@ -518,6 +524,7 @@ const LineChart = props => {
         .attr("y1", y)
         .attr("y2", height + marginTop)
         .attr("stroke", "currentColor")
+        .attr("clip-path", "url(#clip)")
         .style("stroke-width", 1);
       dashed && verticalLine.style("stroke-dasharray", "10,7");
     }
@@ -583,20 +590,38 @@ const LineChart = props => {
       );
     };
 
-    svg
-      .on("mouseover", onMouseOverG)
-      .on("mousemove", onMouseMove)
-      .on("mouseleave", onMouseLeave)
-      .on("dblclick", () => {
-        setDefaultXDomain(xFn);
-        selectAll(".left-g").remove();
-        selectAll(".right-g").remove();
-        selectAll(".reference-line").remove();
+    tooltip &&
+      svg
+        .on("mouseover", onMouseOverG)
+        .on("mousemove", onMouseMove)
+        .on("mouseleave", onMouseLeave);
+    // Todo Zoom
+
+    const extent = [
+      [marginLeft, marginTop],
+      [width, height],
+    ];
+
+    if (zooming) {
+      const zoomFunc = zoom()
+        .scaleExtent([1, 4])
+        .extent(extent)
+        .translateExtent(extent)
+        .on("zoom", zoomed);
+
+      function zoomed(event) {
+        xFn.range(
+          [marginLeft + paddingLeft, width + marginLeft].map(d =>
+            event.transform.applyX(d),
+          ),
+        );
+        xAxisG.call(xAxis);
         drawLeftSeries();
         drawRightSeries();
         drawReferenceLines();
-      });
-    // Todo Zoom
+      }
+      svg.call(zoomFunc);
+    }
   };
 
   useEffect(() => {
@@ -669,7 +694,10 @@ LineChart.propTypes = {
   paddingBottom: PropTypes.number,
 
   // Todo duration of transition
-  zoom: PropTypes.bool,
+  zooming: PropTypes.shape({
+    min: PropTypes.number,
+    max: PropTypes.number,
+  }),
   transitionDuration: PropTypes.number,
   // Decorators
   tooltip: PropTypes.shape({
@@ -683,6 +711,7 @@ LineChart.propTypes = {
       yLeft: PropTypes.number,
       yRight: PropTypes.number,
       className: PropTypes.string,
+      showText: PropTypes.bool,
     }),
   ),
 };

@@ -508,7 +508,7 @@ stories.add("Reference Lines", () => {
             { x: 4, className: "stroke-current text-blue-200 stroke-2" },
           ]}
         />
-        Horizontal Reference Lines
+        Horizontal Reference Lines (add equation)
         <LineChart
           id="horiz-refer-chart"
           data={data}
@@ -527,7 +527,11 @@ stories.add("Reference Lines", () => {
           ]}
           // tooltip={{ keys: ["id", "value", "reading"] }}
           referenceLines={[
-            { yLeft: 1200, className: "stroke-current text-blue-200 stroke-2" },
+            {
+              yLeft: 1200,
+              className: "stroke-current text-blue-200 stroke-2",
+              showText: true,
+            },
           ]}
         />
       </div>
@@ -554,12 +558,13 @@ stories.add("Zoom", () => {
             },
             {
               key: "reading",
+              axis: "right",
               className: "stroke-current text-green-500",
             },
           ]}
           paddingLeft={15}
           // tooltip={{ keys: ["id", "value", "reading"] }}
-          zoom={true}
+          zooming={true}
         />
       </div>
     </>
@@ -567,13 +572,14 @@ stories.add("Zoom", () => {
 });
 
 stories.add("Time series", () => {
-  const arrayLength = 50;
+  const arrayLength = 200;
   const newData = new Array(arrayLength).fill("").map((_, index) => ({
     date: DateTime.now()
       .startOf("day")
       .minus({ days: arrayLength - index })
       .toFormat("yyyy-MM-dd hh:mm:ss"),
     value: randBetween(1000, 1004) + randBetween(index - 10, index),
+    reading: randBetween(1000, 996) - randBetween(index - 10, index),
   }));
 
   return (
@@ -594,11 +600,17 @@ stories.add("Time series", () => {
         y={[
           {
             key: "value",
-            start: 980,
             axis: "left",
+            start: 0,
+            symbol: "none",
             className: "text-red-200 stroke-current",
             curve: "rounded",
             circleFill: true,
+          },
+          {
+            key: "reading",
+            axis: "left",
+            symbol: "none",
           },
         ]}
         tooltip={{
@@ -606,7 +618,9 @@ stories.add("Time series", () => {
           html: row =>
             `${DateTime.fromFormat(row.date, "yyyy-MM-dd hh:mm:ss").toFormat(
               "dd MMM",
-            )}'s value : <br/><strong>${row.value.toFixed(2)}</strong>`,
+            )}'s <br/> value : <strong>${row.value.toFixed(2)}</strong> <br/>
+            reading : <strong>${row.reading.toFixed(2)}</strong>
+            `,
           className:
             "bg-white rounded border-2 p-2 transition-opacity duration-500",
           onClick: row => {
@@ -614,7 +628,11 @@ stories.add("Time series", () => {
           },
         }}
         paddingBottom={10}
-        zoom={true}
+        zooming={{
+          enable: true,
+          min: 1,
+          max: 10,
+        }}
         referenceLines={[
           {
             x: DateTime.now()
@@ -631,6 +649,7 @@ stories.add("Time series", () => {
           {
             yLeft: 1000,
             className: "stroke-current text-green-500",
+            showText: true,
           },
         ]}
       />
