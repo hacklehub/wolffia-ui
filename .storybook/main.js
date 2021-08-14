@@ -4,15 +4,16 @@ module.exports = {
   stories: ["../src/stories/**/*.stories.js"],
   addons: [
     "storybook-tailwind-dark-mode",
+    "storybook-dark-mode",
     "@storybook/addon-actions/register",
     {
       name: "@storybook/addon-postcss",
       options: {
         postcssLoaderOptions: {
-          implementation: require("postcss")
-        }
-      }
-    }
+          implementation: require("postcss"),
+        },
+      },
+    },
   ],
   webpackFinal: async (config, { configType }) => {
     // `configType` has a value of 'DEVELOPMENT' or 'PRODUCTION'
@@ -23,10 +24,10 @@ module.exports = {
     config.module.rules.push({
       test: /\.scss$/,
       use: ["style-loader", "css-loader", "sass-loader"],
-      include: path.resolve(__dirname, "../")
+      include: path.resolve(__dirname, "../"),
     });
 
     // Return the altered config
     return config;
-  }
+  },
 };

@@ -19,13 +19,22 @@ stories.add("Simple Lollipop Horizontal", () => {
 
   return (
     <>
-      <div className="w-100 h-60">
+      <div className="">
         <LollipopHorizontalChart
           data={data}
+          height={100}
+          paddingBottom={20}
           id="lollipop-horizontal"
-          value="reading"
+          className="text-green-500 dark:text-green-100"
+          classNamePoints="text-green-500 dark:text-green-100"
+          x={{
+            key: "reading",
+            axisTicks: 2
+          }}
+          y={{
+            key: "name"
+          }}
           valueMin={0}
-          label="name"
         />
       </div>
     </>

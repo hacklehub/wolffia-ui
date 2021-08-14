@@ -17,7 +17,7 @@ stories.add("Basic Scatterplot", () => {
     dependant: randBetween(1000, 1500),
     independant: randBetween(300, 500),
     sizeVariable: randBetween(100, 400),
-    category: categories[randBetween(0, 2)]
+    category: categories[randBetween(0, 2)],
   }));
 
   const shapeMap = { UDF: "square", LDF: "diamond" };
@@ -29,8 +29,8 @@ stories.add("Basic Scatterplot", () => {
       x={{ key: "independant", axisTicks: 10, start: 0 }}
       y={{
         key: "dependant",
+        axisTicks: 10,
         start: 0,
-        axisTicks: 10
       }}
       shape={{ key: "category", map: shapeMap }}
       size={{ key: "sizeVariable", min: 10, max: 40 }}
@@ -40,12 +40,13 @@ stories.add("Basic Scatterplot", () => {
         html: row =>
           `<div class="m-2 p-2 rounded" style="background-color: ${
             colorMap[row.category]
-          }">${row.sizeVariable}</div>`
+          }">${row.sizeVariable}</div>`,
       }}
       width={480}
       height={300}
       paddingBottom={10}
       paddingLeft={10}
+      zoom={true}
     />
   );
 });

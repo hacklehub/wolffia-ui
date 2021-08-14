@@ -18,13 +18,13 @@ const data = [
   { id: 3, value: 1000 },
   { id: 4, value: 1513 },
   { id: 5, value: 1351, reading: 1000 },
-  { id: 6, value: 1451, reading: 1200 }
+  { id: 6, value: 1451, reading: 1200 },
 ];
 
 stories.add("Getting started", () => {
   return (
     <>
-      <div className="w-100 h-60 text-gray-500">
+      <div className="">
         Line charts are useful for showing linear trends in data. The x & y
         variables in a line chart need to be numerical (x-axis variable can be a
         timestamp as well for time series data).
@@ -34,11 +34,11 @@ stories.add("Getting started", () => {
           x={{ key: "id" }}
           y={[
             {
-              key: "value"
+              key: "value",
             },
             {
-              key: "reading"
-            }
+              key: "reading",
+            },
           ]}
         />
       </div>
@@ -49,7 +49,7 @@ stories.add("Getting started", () => {
 stories.add("add classNames to series", () => {
   return (
     <>
-      <div className="w-100 h-60">
+      <div className="">
         Series can be formatted by adding tailwind classNames to them.
         <LineChart
           id="new-line"
@@ -59,12 +59,12 @@ stories.add("add classNames to series", () => {
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         For more customized styling, feel free to add your own custom classNames
@@ -77,12 +77,12 @@ stories.add("add classNames to series", () => {
           y={[
             {
               key: "value",
-              className: "custom-series-1"
+              className: "custom-series-1",
             },
             {
               key: "reading",
-              className: "custom-series-2 running"
-            }
+              className: "custom-series-2 running",
+            },
           ]}
         />
       </div>
@@ -98,17 +98,17 @@ stories.add("Styling the chart", () => {
         <LineChart
           id="chart-styling-demo"
           data={data}
-          className="rounded bg-red-50 hover:bg-red-100"
+          className="rounded bg-red-50 hover:bg-red-100 dark:bg-red-900 "
           x={{ key: "id" }}
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         W-, H- classes won't work though. Specify width & height as prop. This
@@ -118,17 +118,17 @@ stories.add("Styling the chart", () => {
           data={data}
           width={320}
           height={120}
-          className="rounded bg-red-50 hover:bg-red-100"
+          className="rounded bg-red-50 hover:bg-red-100 dark:bg-red-900"
           x={{ key: "id" }}
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Add Padding to a chart. Padding is the space between the drawn axis and
@@ -142,17 +142,17 @@ stories.add("Styling the chart", () => {
           paddingBottom={10}
           paddingLeft={10}
           paddingRight={10}
-          className="rounded bg-red-50 hover:bg-red-100"
+          className="rounded bg-red-50 hover:bg-red-100 dark:bg-red-900"
           x={{ key: "id" }}
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
       </div>
@@ -163,7 +163,7 @@ stories.add("Styling the chart", () => {
 stories.add("x-axis customization", () => {
   return (
     <>
-      <div className="w-100 h-60">
+      <div className="">
         Axis at the top
         <LineChart
           id="x-axis-top-demo"
@@ -173,12 +173,12 @@ stories.add("x-axis customization", () => {
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Custom Axis ticks
@@ -190,12 +190,12 @@ stories.add("x-axis customization", () => {
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Axis Label
@@ -207,12 +207,12 @@ stories.add("x-axis customization", () => {
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Custom axis start and end
@@ -224,12 +224,12 @@ stories.add("x-axis customization", () => {
           y={[
             {
               key: "value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
       </div>
@@ -240,7 +240,7 @@ stories.add("x-axis customization", () => {
 stories.add("y-axis customization", () => {
   return (
     <>
-      <div className="w-100 h-60">
+      <div className="">
         Left and right axis demo
         <LineChart
           id="multi-axis-demo-chart"
@@ -250,13 +250,13 @@ stories.add("y-axis customization", () => {
             {
               key: "value",
               axis: "left",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
               axis: "right",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Custom start & end point on y-axis scales
@@ -269,14 +269,14 @@ stories.add("y-axis customization", () => {
               key: "value",
               axis: "left",
               start: 0,
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
               axis: "right",
               end: 3000,
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Custom ticks
@@ -290,15 +290,15 @@ stories.add("y-axis customization", () => {
               axis: "left",
               start: 0,
               ticks: 3,
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
               axis: "right",
               end: 3000,
               ticks: 3,
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Customize symbol (shape and size)
@@ -313,7 +313,7 @@ stories.add("y-axis customization", () => {
               start: 0,
               ticks: 3,
               symbol: "diamond",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
@@ -322,8 +322,8 @@ stories.add("y-axis customization", () => {
               size: 25,
               end: 3000,
               ticks: 3,
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
         />
         Customize what to do if series value is Undefined or unknown
@@ -337,7 +337,7 @@ stories.add("y-axis customization", () => {
               axis: "left",
               ticks: 3,
               symbol: "diamond",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
@@ -347,8 +347,8 @@ stories.add("y-axis customization", () => {
               start: 0,
               unknown: "zero",
               ticks: 3,
-              className: "stroke-current stroke-2 text-green-500"
-            }
+              className: "stroke-current stroke-2 text-green-500",
+            },
           ]}
         />
         Y axis - custom label
@@ -363,7 +363,7 @@ stories.add("y-axis customization", () => {
               ticks: 3,
               symbol: "diamond",
               axisLabel: "Value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
@@ -374,8 +374,8 @@ stories.add("y-axis customization", () => {
               start: 0,
               unknown: "zero",
               ticks: 3,
-              className: "stroke-current stroke-2 text-green-500"
-            }
+              className: "stroke-current stroke-2 text-green-500",
+            },
           ]}
         />
         Customized curve
@@ -391,7 +391,7 @@ stories.add("y-axis customization", () => {
               symbol: "diamond",
               curve: "step",
               axisLabel: "Value",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
@@ -401,8 +401,8 @@ stories.add("y-axis customization", () => {
               size: 25,
               curve: "rounded",
               ticks: 3,
-              className: "stroke-current  text-green-500"
-            }
+              className: "stroke-current  text-green-500",
+            },
           ]}
         />
         Custom Curve
@@ -414,7 +414,7 @@ stories.add("y-axis customization", () => {
 stories.add("Tooltip", () => {
   return (
     <>
-      <div className="w-100 h-60">
+      <div className="">
         Simplest Tooltip - hover over the chart
         <LineChart
           id="tooltip-demo-chart"
@@ -424,13 +424,13 @@ stories.add("Tooltip", () => {
             {
               key: "value",
               axis: "left",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
               axis: "right",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
           tooltip={{ keys: ["id", "value", "reading"] }}
         />
@@ -443,13 +443,13 @@ stories.add("Tooltip", () => {
             {
               key: "value",
               axis: "left",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
               axis: "right",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
           showGuidelines={true}
           tooltip={{}}
@@ -463,17 +463,17 @@ stories.add("Tooltip", () => {
             {
               key: "value",
               axis: "left",
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
               axis: "right",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
           tooltip={{
             keys: ["id", "value", "reading"],
-            className: "bg-white rounded ring-2 p-2"
+            className: "bg-white rounded ring-2 p-2",
           }}
           showGuidelines={true}
         />
@@ -496,16 +496,16 @@ stories.add("Reference Lines", () => {
               key: "value",
               axis: "left",
               start: 0,
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
           // tooltip={{ keys: ["id", "value", "reading"] }}
           referenceLines={[
-            { x: 4, className: "stroke-current text-blue-200 stroke-2" }
+            { x: 4, className: "stroke-current text-blue-200 stroke-2" },
           ]}
         />
         Horizontal Reference Lines
@@ -518,16 +518,16 @@ stories.add("Reference Lines", () => {
               key: "value",
               axis: "left",
               start: 0,
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
           // tooltip={{ keys: ["id", "value", "reading"] }}
           referenceLines={[
-            { yLeft: 1200, className: "stroke-current text-blue-200 stroke-2" }
+            { yLeft: 1200, className: "stroke-current text-blue-200 stroke-2" },
           ]}
         />
       </div>
@@ -539,6 +539,8 @@ stories.add("Zoom", () => {
   return (
     <>
       <div>
+        Zoom over a region of the chart by dragging. Undo the zoom by double
+        clicking anywhere on the chart
         <LineChart
           id="horiz-refer-chart"
           data={data}
@@ -548,12 +550,12 @@ stories.add("Zoom", () => {
               key: "value",
               axis: "left",
               start: 0,
-              className: "stroke-current text-red-500"
+              className: "stroke-current text-red-500",
             },
             {
               key: "reading",
-              className: "stroke-current text-green-500"
-            }
+              className: "stroke-current text-green-500",
+            },
           ]}
           paddingLeft={15}
           // tooltip={{ keys: ["id", "value", "reading"] }}
@@ -571,7 +573,7 @@ stories.add("Time series", () => {
       .startOf("day")
       .minus({ days: arrayLength - index })
       .toFormat("yyyy-MM-dd hh:mm:ss"),
-    value: randBetween(1000, 1004) + randBetween(index - 10, index)
+    value: randBetween(1000, 1004) + randBetween(index - 10, index),
   }));
 
   return (
@@ -587,7 +589,7 @@ stories.add("Time series", () => {
           key: "date",
           scalingFunction: "time",
           format: "yyyy-MM-dd hh:mm:ss",
-          axisLabel: "Date"
+          axisLabel: "Date",
         }}
         y={[
           {
@@ -596,20 +598,20 @@ stories.add("Time series", () => {
             axis: "left",
             className: "text-red-200 stroke-current",
             curve: "rounded",
-            circleFill: true
-          }
+            circleFill: true,
+          },
         ]}
         tooltip={{
           // keys: ["date", "value"],
           html: row =>
             `${DateTime.fromFormat(row.date, "yyyy-MM-dd hh:mm:ss").toFormat(
-              "dd MMM"
+              "dd MMM",
             )}'s value : <br/><strong>${row.value.toFixed(2)}</strong>`,
           className:
             "bg-white rounded border-2 p-2 transition-opacity duration-500",
           onClick: row => {
             console.log(row);
-          }
+          },
         }}
         paddingBottom={10}
         zoom={true}
@@ -618,18 +620,18 @@ stories.add("Time series", () => {
             x: DateTime.now()
               .minus({ days: 10 })
               .toFormat("yyyy-MM-dd hh:mm:ss"),
-            className: "text-red-900"
+            className: "text-red-900",
           },
           {
             x: DateTime.now()
               .minus({ days: 30 })
               .toFormat("yyyy-MM-dd hh:mm:ss"),
-            className: "text-blue-500"
+            className: "text-blue-500",
           },
           {
             yLeft: 1000,
-            className: "stroke-current text-green-500"
-          }
+            className: "stroke-current text-green-500",
+          },
         ]}
       />
     </>

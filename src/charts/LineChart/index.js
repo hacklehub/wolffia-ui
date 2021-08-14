@@ -3,7 +3,8 @@ import PropTypes from "prop-types";
 
 import { select, pointer, selectAll } from "d3-selection";
 import { scaleTime, scaleLinear } from "d3-scale";
-import { brushX } from "d3-brush";
+
+import { zoom } from "d3-zoom";
 import { max, min, minIndex } from "d3-array";
 import {
   curveStep,
@@ -17,7 +18,7 @@ import {
   symbolSquare,
   symbolWye,
   symbolDiamond,
-  symbolCircle
+  symbolCircle,
 } from "d3-shape";
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
@@ -43,7 +44,7 @@ const LineChart = props => {
     x,
     y,
     tooltip,
-    zoom,
+    enableZoom,
     width = 490,
     height = 200,
     paddingLeft = 0,
@@ -55,8 +56,10 @@ const LineChart = props => {
     marginTop = 40,
     marginBottom = 40,
     showGuidelines = false,
-    referenceLines = []
+    referenceLines = [],
   } = props;
+
+  // Todo partial stroke-dashed
   const refreshChart = async () => {
     const shapeMapping = {
       circle: symbolCircle,
@@ -66,14 +69,14 @@ const LineChart = props => {
       cross: symbolCross,
       star: symbolStar,
       wye: symbolWye,
-      default: symbolCircle
+      default: symbolCircle,
     };
 
     const curveMapping = {
       rounded: curveCatmullRom,
       step: curveStep,
       line: curveLinear,
-      default: curveLinear
+      default: curveLinear,
     };
 
     /**
@@ -86,7 +89,7 @@ const LineChart = props => {
             Number.isFinite(x.start)
               ? x.start
               : min(data.map(d => toDateTime(d))),
-            Number.isFinite(x.end) ? x.end : max(data.map(d => toDateTime(d)))
+            Number.isFinite(x.end) ? x.end : max(data.map(d => toDateTime(d))),
           ])
         : xFunction.domain([
             Number.isFinite(x.start)
@@ -98,7 +101,7 @@ const LineChart = props => {
               ? x.end
               : x.convert
               ? max(data.map(d => x.convert(d)))
-              : max(data.map(d => d[x.key]))
+              : max(data.map(d => d[x.key])),
           ]);
     };
 
@@ -126,18 +129,18 @@ const LineChart = props => {
 
     const minLeftYs =
         allLeftY.length > 0 &&
-        min([
-          ...allLeftY.map(column => column.start),
-          ...allLeftY.map((column, minValue) =>
-            min(data.map(d => d[column.key]))
-          )
-        ]),
+        Number.isFinite(min(allLeftY.map(column => column.start)))
+          ? min(allLeftY.map(column => column.start))
+          : min([
+              ...allLeftY.map((column, minValue) =>
+                min(data.map(d => d[column.key])),
+              ),
+            ]),
       maxLeftYs =
         allLeftY.length > 0 &&
-        max([
-          ...allLeftY.map(column => max(data.map(d => d[column.key]))),
-          ...allLeftY.map(column => column.end)
-        ]),
+        Number.isFinite(max(allLeftY.map(column => column.end)))
+          ? max(allLeftY.map(column => column.end))
+          : max([...allLeftY.map(column => max(data.map(d => d[column.key])))]),
       minTicksLeft =
         allLeftY.length > 0 && min(allLeftY.map(column => column.ticks));
 
@@ -154,13 +157,13 @@ const LineChart = props => {
         allRightY.length > 0 &&
         min([
           ...allRightY.map(column => min(data.map(d => d[column.key]))),
-          ...allRightY.map(column => column.start)
+          ...allRightY.map(column => column.start),
         ]),
       maxRightYs =
         allRightY.length > 0 &&
         max([
           ...allRightY.map(column => max(data.map(d => d[column.key]))),
-          ...allRightY.map(column => column.end)
+          ...allRightY.map(column => column.end),
         ]);
 
     const yRightFn =
@@ -185,7 +188,7 @@ const LineChart = props => {
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
+        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
       )
       .transition()
       .duration(400)
@@ -218,7 +221,7 @@ const LineChart = props => {
           "x",
           x.axisLabelPosition === "right"
             ? marginLeft + width + 15
-            : marginLeft + width / 2
+            : marginLeft + width / 2,
         )
         .attr("y", marginTop - 10)
         .style("font-size", "1.1em");
@@ -281,58 +284,28 @@ const LineChart = props => {
         .attr("y", marginTop - 5)
         .style("font-size", "1.1em");
 
-    // Add brushing
+    const clipPath = svg
+      .append("clipPath")
+      .attr("id", "clip")
+      .append("rect")
+      .attr("x", marginLeft)
+      .attr("y", marginTop - paddingTop)
+      .attr("width", width + paddingRight)
+      .attr("height", height + paddingBottom);
 
-    if (zoom) {
-      const updateChart = (event, d) => {
-        const extent = event.selection;
+    const leftG = g
+      .append("g")
+      .attr("class", "left-g")
+      .attr("clip-path", "url(#clip)");
 
-        if (extent) {
-          xFn.domain([xFn.invert(extent[0]), xFn.invert(extent[1])]);
-          select(".brush").call(brush.move, null);
-        }
-
-        xAxisG.transition().duration(400).call(xAxis);
-        selectAll(".left-g").remove();
-        selectAll(".right-g").remove();
-        selectAll(".reference-line").remove();
-        drawLeftSeries();
-        drawRightSeries();
-        drawReferenceLines();
-      };
-
-      // Add a clipPath: everything out of this area won't be drawn.
-      const clipPath = svg
-        .append("defs")
-        .append("svg:clipPath")
-        .attr("id", "clip")
-        .append("svg:rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("x", marginLeft)
-        .attr("y", marginTop);
-
-      const brush = brushX() // Add the brush feature using the d3.brush function
-        .extent([
-          [marginLeft, marginTop],
-          [width + marginLeft, height + marginTop - 1]
-        ]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-        .on("end", updateChart);
-
-      // Add the line
-
-      // Add the brushing
-      svg.append("g").attr("class", "brush").call(brush);
-    }
+    leftG.selectAll("g").data(data).enter().append("path");
 
     const drawLeftSeries = () => {
       // Draw left axis values
 
-      const leftG = g.append("g").attr("class", "left-g");
-
       allLeftY.map(column => {
         const seriesData = data.filter(
-          d => Number.isFinite(d[column.key]) || column.unknown === "zero"
+          d => Number.isFinite(d[column.key]) || column.unknown === "zero",
         );
 
         const columnCurve =
@@ -340,7 +313,7 @@ const LineChart = props => {
 
         const newLine = line()
           .x(d =>
-            x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+            x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key]),
           )
           .y(d => yLeftFn(d[column.key] || (column.unknown === "zero" && 0)))
           .curve(columnCurve || curveLinear);
@@ -373,9 +346,10 @@ const LineChart = props => {
             "d",
             symbol()
               .type(shapeMapping[column.symbol] || symbolCircle)
-              .size(column.size || 16)
+              .size(column.size || 16),
           )
           .attr("class", `${column.className} fill-current`)
+          // .attr("clip-path", "url(#clip)")
           .attr(
             "transform",
             d =>
@@ -383,29 +357,33 @@ const LineChart = props => {
                 x.scalingFunction === "time"
                   ? xFn(toDateTime(d))
                   : xFn(d[x.key])
-              },${yLeftFn(d[column.key] || (column.unknown === "zero" && 0))})`
+              },${yLeftFn(d[column.key] || (column.unknown === "zero" && 0))})`,
           );
       });
     };
 
+    const rightG = g
+      .append("g")
+      .attr("class", "right-g")
+      .attr("clip-path", "url(#clip)");
+
     const drawRightSeries = () => {
-      const rightG = g.append("g");
       allRightY.map(column => {
         const newLine = line()
           .x(d =>
-            x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key])
+            x.scalingFunction === "time" ? xFn(toDateTime(d)) : xFn(d[x.key]),
           )
           .y(d => yRightFn(d[column.key] || (column.unknown === "zero" && 0)))
           .curve(column.curve || curveLinear);
 
         const seriesData = data.filter(
-          d => Number.isFinite(d[column.key]) || column.unknown === "zero"
+          d => Number.isFinite(d[column.key]) || column.unknown === "zero",
         );
         const seriesPath = rightG
           .append("path")
           .attr(
             "class",
-            `right-series stroke-current ${column.className || ""}`
+            `right-series stroke-current ${column.className || ""}`,
           )
           .datum(seriesData)
           .attr("fill", "none")
@@ -432,7 +410,7 @@ const LineChart = props => {
             "d",
             symbol()
               .type(shapeMapping[column.symbol] || symbolCircle)
-              .size(column.size || 16)
+              .size(column.size || 16),
           )
           .attr("class", `${column.className} fill-current`)
           .attr(
@@ -442,7 +420,9 @@ const LineChart = props => {
                 x.scalingFunction === "time"
                   ? xFn(toDateTime(d))
                   : xFn(d[x.key])
-              },${yRightFn(d[column.key] || (column.unknown === "zero" && 0))})`
+              },${yRightFn(
+                d[column.key] || (column.unknown === "zero" && 0),
+              )})`,
           );
       });
     };
@@ -458,7 +438,7 @@ const LineChart = props => {
                 ? xFn(toDateTime({ [x.key]: object.x }))
                 : xFn(object.x),
             y: marginTop,
-            className: `${object.className || ""} reference-line`
+            className: `${object.className || ""} reference-line`,
           });
 
         object.yLeft &&
@@ -466,7 +446,7 @@ const LineChart = props => {
             y: yLeftFn(object.yLeft),
             x: marginLeft,
             className: `${object.className || ""} reference-line`,
-            direction: "right"
+            direction: "right",
           });
 
         object.yRight &&
@@ -474,7 +454,7 @@ const LineChart = props => {
             y: yRightFn(object.yRight),
             x: marginLeft,
             className: `${object.className || ""} reference-line`,
-            direction: "right"
+            direction: "right",
           });
       });
     };
@@ -497,7 +477,7 @@ const LineChart = props => {
     tooltip &&
       tooltip.style &&
       Object.entries(tooltip.style).map(([key, value]) =>
-        tooltipDiv.style(key, value)
+        tooltipDiv.style(key, value),
       );
 
     function onMouseOverG(event) {
@@ -515,7 +495,7 @@ const LineChart = props => {
       y,
       direction = "left",
       className,
-      dashed = false
+      dashed = false,
     }) {
       const horizontalLine = g
         .append("line")
@@ -558,10 +538,10 @@ const LineChart = props => {
           x: xValue(dataClosest),
           y: min([
             (yLeftFn && yLeftFn(max(dataLeft))) || marginTop + height,
-            (yRightFn && yRightFn(max(dataRight))) || marginTop + height
+            (yRightFn && yRightFn(max(dataRight))) || marginTop + height,
           ]),
           className: "axisPointLine text-gray-200 stroke-current",
-          dashed: true
+          dashed: true,
         });
 
         dataLeft.map(
@@ -570,8 +550,8 @@ const LineChart = props => {
             drawHLine({
               x: xValue(dataClosest),
               y: yLeftFn(yValue),
-              dashed: true
-            })
+              dashed: true,
+            }),
         );
         dataRight.map(
           yValue =>
@@ -580,8 +560,8 @@ const LineChart = props => {
               x: xValue(dataClosest),
               y: yRightFn(yValue),
               direction: "right",
-              dashed: true
-            })
+              dashed: true,
+            }),
         );
       }
 
@@ -599,7 +579,7 @@ const LineChart = props => {
           ? tooltip.keys.map(key => `${key}: ${row[key] || ""}`).join("<br/>")
           : Object.entries(row)
               .map(([key, value]) => `${key}: ${value}`)
-              .join("<br/>")
+              .join("<br/>"),
       );
     };
 
@@ -616,6 +596,7 @@ const LineChart = props => {
         drawRightSeries();
         drawReferenceLines();
       });
+    // Todo Zoom
   };
 
   useEffect(() => {
@@ -649,7 +630,7 @@ LineChart.propTypes = {
     axisLabel: PropTypes.string,
     axisLabelPosition: PropTypes.oneOf(["right, bottom"]),
     start: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
-    end: PropTypes.oneOfType([PropTypes.object, PropTypes.number])
+    end: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
   }),
   y: PropTypes.arrayOf(
     PropTypes.shape({
@@ -667,11 +648,11 @@ LineChart.propTypes = {
         "triangle",
         "wye",
         "cross",
-        "diamond"
+        "diamond",
       ]),
       size: PropTypes.number,
-      unknown: PropTypes.oneOf(["zero"])
-    })
+      unknown: PropTypes.oneOf(["zero"]),
+    }),
   ),
 
   // Styles
@@ -694,16 +675,16 @@ LineChart.propTypes = {
   tooltip: PropTypes.shape({
     keys: PropTypes.arrayOf(PropTypes.string),
     className: PropTypes.string,
-    html: PropTypes.func
+    html: PropTypes.func,
   }),
   referenceLines: PropTypes.arrayOf(
     PropTypes.shape({
       x: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
       yLeft: PropTypes.number,
       yRight: PropTypes.number,
-      className: PropTypes.string
-    })
-  )
+      className: PropTypes.string,
+    }),
+  ),
 };
 
 export default LineChart;

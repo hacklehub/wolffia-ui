@@ -21,6 +21,7 @@
     "babel-loader": "^8.2.2",
     "postcss": "^8.3.6",
     "postcss-flexbugs-fixes": "^5.0.2",
+    "storybook-dark-mode": "^1.0.8",
     "storybook-tailwind-dark-mode": "^1.0.9",
     "tailwindcss": "^2.2.7"
   },

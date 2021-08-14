@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-import { select, pointer, selectAll } from "d3-selection";
+import { select, selectAll } from "d3-selection";
 import { max, min } from "d3-array";
 import { scaleLinear, scalePoint } from "d3-scale";
 
@@ -13,7 +13,7 @@ import {
   symbolTriangle,
   symbolWye,
   symbolCross,
-  symbolStar
+  symbolStar,
 } from "d3-shape";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
@@ -37,19 +37,18 @@ const LollipopHorizontalChart = ({
   paddingRight = 0,
   paddingBottom = 50,
   paddingTop = 0,
-  value,
-  label,
+
   labelWidth = 100,
   shape = "circle",
   x = { axis: "bottom", axisTicks: 5 },
-  y = { axis: "left" }
+  y = { axis: "left" },
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
     // Clear svg
 
     svg.selectAll("*").remove();
-    data.sort((a, b) => b[value] - a[value]);
+    data.sort((a, b) => b[x.key] - a[x.key]);
 
     const shapeMapping = {
       circle: symbolCircle,
@@ -58,18 +57,18 @@ const LollipopHorizontalChart = ({
       square: symbolSquare,
       cross: symbolCross,
       star: symbolStar,
-      wye: symbolWye
+      wye: symbolWye,
     };
 
     const xFn = scaleLinear()
       .domain([
-        Number.isFinite(valueMin) ? valueMin : min(data, d => d[value]),
-        Number.isFinite(valueMax) ? valueMax : max(data, d => d[value])
+        Number.isFinite(valueMin) ? valueMin : min(data, d => d[x.key]),
+        Number.isFinite(valueMax) ? valueMax : max(data, d => d[x.key]),
       ])
       .range([labelWidth + paddingLeft, paddingLeft + width]);
 
     const yFn = scalePoint()
-      .domain(data.map(d => d[label]))
+      .domain(data.map(d => d[y.key]))
       // .range([height + marginTop - paddingBottom, marginTop + paddingTop])
       .range([marginTop + paddingTop, marginTop + height - paddingBottom]);
 
@@ -85,7 +84,7 @@ const LollipopHorizontalChart = ({
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
+        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
       )
       .transition()
       .duration(1000)
@@ -98,7 +97,7 @@ const LollipopHorizontalChart = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${y.axis === "right" ? marginLeft + width : labelWidth},0)`
+        `translate(${y.axis === "right" ? marginLeft + width : labelWidth},0)`,
       );
 
     paddingLeft &&
@@ -134,15 +133,17 @@ const LollipopHorizontalChart = ({
         .append("line")
         .attr(
           "class",
-          `line stroke-current ${classNamePoints || ""} ${classNameLines || ""}`
+          `line stroke-current ${classNamePoints || ""} ${
+            classNameLines || ""
+          }`,
         )
         .attr("x1", labelWidth)
-        .attr("y1", d => yFn(d[label]))
+        .attr("y1", d => yFn(d[y.key]))
         .attr("x2", labelWidth)
-        .attr("y2", d => yFn(d[label]))
+        .attr("y2", d => yFn(d[y.key]))
         .transition()
         .duration(1000)
-        .attr("x2", d => xFn(d[value]));
+        .attr("x2", d => xFn(d[x.key]));
 
       pointGroup
         .append("path")
@@ -150,19 +151,15 @@ const LollipopHorizontalChart = ({
           "class",
           `symbols fill-current ${classNamePoints || ""} ${
             classNameSymbols || ""
-          }`
+          }`,
         )
-        .attr(
-          "d",
-          // Todo other symbols
-          d => symbol(shapeMapping[shape], 100)()
-        )
-        .attr("transform", d => `translate(${labelWidth},${yFn(d[label])})`)
+        .attr("d", d => symbol(shapeMapping[shape], 100)())
+        .attr("transform", d => `translate(${labelWidth},${yFn(d[y.key])})`)
         .transition()
         .duration(1000)
         .attr(
           "transform",
-          d => `translate(${xFn(d[value])},${yFn(d[label])} )`
+          d => `translate(${xFn(d[x.key])},${yFn(d[y.key])} )`,
         );
     };
 
@@ -196,7 +193,7 @@ LollipopHorizontalChart.propTypes = {
   marginTop: PropTypes.number,
   marginBottom: PropTypes.number,
   value: PropTypes.string,
-  label: PropTypes.string
+  label: PropTypes.string,
 };
 
 export default LollipopHorizontalChart;

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-import { select, pointer } from "d3-selection";
+import { select, pointer, selectAll } from "d3-selection";
 import { max, min, extent } from "d3-array";
 import { scaleLinear, scaleOrdinal } from "d3-scale";
+
+import { brush } from "d3-brush";
 
 import {
   symbol,
@@ -13,7 +15,7 @@ import {
   symbolTriangle,
   symbolWye,
   symbolCross,
-  symbolStar
+  symbolStar,
 } from "d3-shape";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
@@ -28,7 +30,7 @@ const ScatterPlot = ({
   tooltip,
   color,
   shape,
-  width = 490,
+  width = 500,
   height = 200,
   marginLeft = 40,
   marginRight = 40,
@@ -38,7 +40,8 @@ const ScatterPlot = ({
   paddingRight = 0,
   paddingBottom = 0,
   paddingTop = 0,
-  style = {}
+  style = {},
+  zoom = false,
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
@@ -48,8 +51,13 @@ const ScatterPlot = ({
 
     const g = svg.append("g");
 
-    const xFn = scaleLinear()
-      .domain([
+    const xFn = scaleLinear().range([
+      marginLeft + paddingLeft,
+      width + marginLeft,
+    ]);
+
+    const setDefaultDomain = (xFn, yFn) => {
+      xFn.domain([
         x.start !== null && x.start !== undefined
           ? x.start
           : !x.convert
@@ -59,16 +67,10 @@ const ScatterPlot = ({
           ? x.end
           : x.convert
           ? max(data.map(d => x.convert(d)))
-          : max(data.map(d => d[x.key]))
-      ])
-      .range([marginLeft + paddingLeft, width + marginLeft]);
+          : max(data.map(d => d[x.key])),
+      ]);
 
-    const xAxis = (x.axis === "top" ? axisTop(xFn) : axisBottom(xFn)).ticks(
-      x.axisTicks || 5
-    );
-
-    const yFn = scaleLinear()
-      .domain([
+      yFn.domain([
         y.start !== null && y.start !== undefined
           ? y.start
           : !y.convert
@@ -78,12 +80,22 @@ const ScatterPlot = ({
           ? y.end
           : y.convert
           ? max(data.map(d => y.convert(d)))
-          : max(data.map(d => d[y.key]))
-      ])
-      .range([height + marginTop - paddingBottom, marginTop + paddingTop]);
+          : max(data.map(d => d[y.key])),
+      ]);
+    };
 
+    const xAxis = (x.axis === "top" ? axisTop(xFn) : axisBottom(xFn)).ticks(
+      x.axisTicks || 5,
+    );
+
+    const yFn = scaleLinear().range([
+      height + marginTop - paddingTop - paddingBottom,
+      marginTop + paddingTop,
+    ]);
+
+    setDefaultDomain(xFn, yFn);
     const yAxis = (y.axis === "right" ? axisRight(yFn) : axisLeft(yFn)).ticks(
-      y.axisTicks || 5
+      y.axisTicks || 5,
     );
 
     const xAxisG = g
@@ -91,7 +103,7 @@ const ScatterPlot = ({
       .attr("class", "xAxis axis")
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`
+        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
       );
 
     xAxisG.transition().duration(400).call(xAxis);
@@ -119,7 +131,7 @@ const ScatterPlot = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${y.axis === "right" ? marginLeft + width : marginLeft},0)`
+        `translate(${y.axis === "right" ? marginLeft + width : marginLeft},0)`,
       );
 
     yAxisG.transition().duration(400).call(yAxis);
@@ -155,7 +167,7 @@ const ScatterPlot = ({
       square: symbolSquare,
       cross: symbolCross,
       star: symbolStar,
-      wye: symbolWye
+      wye: symbolWye,
     };
 
     const shapeScale =
@@ -166,8 +178,8 @@ const ScatterPlot = ({
         .range(Object.values(shape.map).map(shape => shapeMapping[shape]));
 
     // Todo Add brushing
-    // Tooltips
 
+    // Tooltips
     const tooltipDiv = select("body")
       .append("div")
       .attr("id", "tooltip")
@@ -178,35 +190,37 @@ const ScatterPlot = ({
     tooltipDiv.attr("class", `tooltip ${tooltip.className || ""}`);
     tooltip.style &&
       Object.entries(tooltip.style).map(([key, value]) =>
-        tooltipDiv.style(key, value)
+        tooltipDiv.style(key, value),
       );
 
     // Drawing
     const pointsGroup = g.append("g");
 
-    pointsGroup
-      .selectAll(".points")
-      .data(data)
-      .enter()
-      .append("path")
-      .attr(
-        "d",
-        // Todo other symbols
-        d =>
+    function drawPoints() {
+      pointsGroup
+        .selectAll(".points")
+        .data(data)
+        .enter()
+        .append("path")
+        .attr("class", "points")
+        .attr("d", d =>
           symbol(
             shapeScale
               ? shapeScale(d[shape.key])
               : shapeMapping[shape.default || "circle"],
-            sizeScale ? sizeScale(d[size.key]) : size.default || 12
-          )()
-      )
-      .attr("transform", d => `translate(${xFn(d[x.key])},${yFn(d[y.key])})`)
-      .attr("fill", d =>
-        d.fill || colorScale ? colorScale(d[color.key]) : "#000000"
-      )
-      .on("mouseenter", onMouseOverG)
-      .on("mousemove", onMouseMove)
-      .on("mouseleave", onMouseLeave);
+            sizeScale ? sizeScale(d[size.key]) : size.default || 12,
+          )(),
+        )
+        .attr("fill", d =>
+          d.fill || colorScale ? colorScale(d[color.key]) : "#000000",
+        )
+        .attr("transform", d => `translate(${xFn(d[x.key])},${yFn(d[y.key])})`)
+        .on("mouseenter", onMouseOverG)
+        .on("mousemove", onMouseMove)
+        .on("mouseleave", onMouseLeave);
+    }
+
+    drawPoints();
 
     function onMouseMove(event) {
       const [bX, bY] = pointer(event, select("body"));
@@ -222,7 +236,7 @@ const ScatterPlot = ({
           ? tooltip.keys.map(key => `${key}: ${row[key] || ""}`).join("<br/>")
           : Object.entries(row)
               .map(([key, value]) => `${key}: ${value}`)
-              .join("<br/>")
+              .join("<br/>"),
       );
     }
 
@@ -239,6 +253,14 @@ const ScatterPlot = ({
     //Add styles from style prop
     Object.entries(style).map(([key, value]) => {
       pointsGroup.style(key, value);
+    });
+
+    svg.on("dblclick", () => {
+      setDefaultDomain(xFn, yFn);
+
+      // drawLeftSeries();
+      // drawRightSeries();
+      // drawReferenceLines();
     });
   };
 
@@ -259,6 +281,7 @@ ScatterPlot.propTypes = {
   className: PropTypes.string, // Tailwind classes to be added to the chart
   id: PropTypes.string.isRequired,
   data: PropTypes.arrayOf(PropTypes.object),
+  // Styles
   width: PropTypes.number,
   height: PropTypes.number,
   marginLeft: PropTypes.number,
@@ -268,7 +291,9 @@ ScatterPlot.propTypes = {
   paddingLeft: PropTypes.number,
   paddingRight: PropTypes.number,
   paddingTop: PropTypes.number,
-  paddingBottom: PropTypes.number
+  paddingBottom: PropTypes.number,
+  // Zoom
+  zoom: PropTypes.bool,
 };
 
 export default ScatterPlot;
