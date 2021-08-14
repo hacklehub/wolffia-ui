@@ -5,9 +5,7 @@ import { addDecorator } from "@storybook/react";
 import Layout from "./Layout";
 
 export const parameters = {
-  darkMode: {
-    classTarget: "html"
-  }
+  layout: "fullscreen"
 };
 
 addDecorator(storyFn => <Layout>{storyFn()}</Layout>);

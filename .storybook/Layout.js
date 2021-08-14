@@ -3,7 +3,11 @@ import React from "react";
 import "./styles.css";
 
 const Layout = ({ children }) => {
-  return <div className="px-20 py-10  container mx-auto">{children}</div>;
+  return (
+    <div className="p-4 dark:bg-gray-800 text-gray-500 dark:text-gray-50">
+      {children}
+    </div>
+  );
 };
 
 export default Layout;

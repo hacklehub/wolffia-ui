@@ -19,7 +19,7 @@ To import a chart,
                 <LineChart 
                     id="new-line" // This is a required prop
                     data={data}   // This is a required prop
-
+                    {...otherProps}
                 />
             </>
         );
@@ -27,4 +27,12 @@ To import a chart,
 
     export default component;
 
+## Features
 
+### Based on D3js & Tailwind
+
+Basing the visualization layer on d3 gives us the flexibility to customize charts. Using tailwind gives us a light-weight CSS layer and ease of styling.
+
+## Stateless
+
+States are managed in the component it is called from, thus giving the developer the flexibility to change things as they see fit.
