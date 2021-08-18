@@ -4,6 +4,9 @@ Wolffia-UI (named after Wolffia - The smallest flower) is our data visualization
 
 ## Getting started
 
+1. Create react app
+2. Install tailwindcss to your react app (https://tailwindcss.com/docs/guides/create-react-app)
+
 To install wolffia-ui to your React app, 
 
     npm install --save wolffia-ui

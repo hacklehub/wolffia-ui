@@ -3,7 +3,7 @@ import React, { useState, lazy, Suspense } from "react";
 // Storybook
 import { storiesOf } from "@storybook/react";
 
-import LineChart from "../../charts/LineChart";
+import LineChart from "../../charts/LineChart/index";
 
 import { DateTime } from "luxon";
 
