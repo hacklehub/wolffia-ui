@@ -4,7 +4,7 @@ module.exports = {
   stories: ["../src/stories/**/*.stories.js"],
   addons: [
     "storybook-tailwind-dark-mode",
-    "storybook-dark-mode",
+    // "storybook-dark-mode",
     "@storybook/addon-actions/register",
     {
       name: "@storybook/addon-postcss",

@@ -3,13 +3,13 @@ import React, { useState, lazy, Suspense } from "react";
 // Storybook
 import { storiesOf } from "@storybook/react";
 
-import LollipopHorizontalChart from "../../charts/LollipopHChart";
+import LollipopVChart from "../../charts/LollipopVChart";
 
 import { DateTime } from "luxon";
 
-const stories = storiesOf("Lollipop-H", module);
+const stories = storiesOf("Lollipop-V", module);
 
-stories.add("Simple Lollipop Horizontal", () => {
+stories.add("Simple Lollipop Vertical", () => {
   const data = [
     { reading: 110, name: "Category 1" },
     { reading: 100, name: "Category 2" },
@@ -20,24 +20,19 @@ stories.add("Simple Lollipop Horizontal", () => {
   return (
     <>
       <div className="">
-        Lollipop Charts can be used to show ranking by a value.
-        <LollipopHorizontalChart
+        <LollipopVChart
           data={data}
           height={100}
           paddingBottom={20}
           id="lollipop-horizontal"
           className="text-green-500 dark:text-green-100"
           classNamePoints="text-green-500 dark:text-green-100"
-          x={{
+          y={{
             key: "reading",
             axisTicks: 2,
           }}
-          y={{
+          x={{
             key: "name",
-          }}
-          tooltip={{
-            className:
-              "dark:text-green-100 dark:bg-gray-500 border-white border-1 p-2 rounded",
           }}
           valueMin={0}
         />

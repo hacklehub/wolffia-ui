@@ -26,6 +26,8 @@ import { easeSin } from "d3-ease";
 import { transition } from "d3-transition";
 import { DateTime } from "luxon";
 
+import "./styles.css";
+
 /**
  * Display a line chart
  *
@@ -288,10 +290,10 @@ const LineChart = props => {
       .append("clipPath")
       .attr("id", "clip")
       .append("rect")
-      .attr("x", marginLeft)
-      .attr("y", marginTop - paddingTop)
-      .attr("width", width + paddingRight)
-      .attr("height", height + paddingBottom);
+      .attr("x", marginLeft - 4)
+      .attr("y", marginTop - paddingTop - 4)
+      .attr("width", width + paddingRight + 4)
+      .attr("height", height + paddingBottom + 8);
 
     const leftG = g
       .append("g")
@@ -442,13 +444,17 @@ const LineChart = props => {
             drawHLine({
               y: yLeftFn(object.yLeft),
               x: marginLeft,
-              className: `${object.className || ""} reference-line`,
+              className: `stroke-current ${object.className} reference-line`,
               direction: "right",
             });
+
             object.showText &&
-              svg
+              g
                 .append("text")
-                .attr("class", `${object.className || ""} reference-line`)
+                .attr(
+                  "class",
+                  `stroke-current ${object.className}  reference-line-text`,
+                )
                 .attr("x", marginLeft + paddingLeft + width - 10)
                 .attr("y", yLeftFn(object.yLeft) - 5)
                 .attr("font-size", "0.7em")
@@ -511,8 +517,7 @@ const LineChart = props => {
         .attr("y1", y)
         .attr("y2", y)
         .attr("clip-path", "url(#clip)")
-        .attr("stroke", "#dddddd")
-        .style("stroke-width", 1);
+        .attr("stroke", "#dddddd");
       dashed && horizontalLine.style("stroke-dasharray", "10,5");
     }
     function drawVLine({ x, y, className, dashed }) {

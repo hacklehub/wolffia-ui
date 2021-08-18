@@ -7,6 +7,7 @@ import { scaleLinear, scaleOrdinal } from "d3-scale";
 
 import { brush } from "d3-brush";
 
+import { zoom } from "d3-zoom";
 import {
   symbol,
   symbolDiamond,
@@ -41,7 +42,7 @@ const ScatterPlot = ({
   paddingBottom = 0,
   paddingTop = 0,
   style = {},
-  zoom = false,
+  zooming = false,
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
@@ -196,31 +197,27 @@ const ScatterPlot = ({
     // Drawing
     const pointsGroup = g.append("g");
 
-    function drawPoints() {
-      pointsGroup
-        .selectAll(".points")
-        .data(data)
-        .enter()
-        .append("path")
-        .attr("class", "points")
-        .attr("d", d =>
-          symbol(
-            shapeScale
-              ? shapeScale(d[shape.key])
-              : shapeMapping[shape.default || "circle"],
-            sizeScale ? sizeScale(d[size.key]) : size.default || 12,
-          )(),
-        )
-        .attr("fill", d =>
-          d.fill || colorScale ? colorScale(d[color.key]) : "#000000",
-        )
-        .attr("transform", d => `translate(${xFn(d[x.key])},${yFn(d[y.key])})`)
-        .on("mouseenter", onMouseOverG)
-        .on("mousemove", onMouseMove)
-        .on("mouseleave", onMouseLeave);
-    }
-
-    drawPoints();
+    pointsGroup
+      .selectAll(".points")
+      .data(data)
+      .enter()
+      .append("path")
+      .attr("class", "points")
+      .attr("d", d =>
+        symbol(
+          shapeScale
+            ? shapeScale(d[shape.key])
+            : shapeMapping[shape.default || "circle"],
+          sizeScale ? sizeScale(d[size.key]) : size.default || 12,
+        )(),
+      )
+      .attr("fill", d =>
+        d.fill || colorScale ? colorScale(d[color.key]) : "#000000",
+      )
+      .attr("transform", d => `translate(${xFn(d[x.key])},${yFn(d[y.key])})`)
+      .on("mouseenter", onMouseOverG)
+      .on("mousemove", onMouseMove)
+      .on("mouseleave", onMouseLeave);
 
     function onMouseMove(event) {
       const [bX, bY] = pointer(event, select("body"));
@@ -255,13 +252,38 @@ const ScatterPlot = ({
       pointsGroup.style(key, value);
     });
 
-    svg.on("dblclick", () => {
-      setDefaultDomain(xFn, yFn);
+    const chartExtent = [
+      [marginLeft, marginTop],
+      [width, height],
+    ];
 
-      // drawLeftSeries();
-      // drawRightSeries();
-      // drawReferenceLines();
-    });
+    if (zooming) {
+      const zoomFunc = zoom()
+        .scaleExtent([zooming.min || 1, zooming.max || 4])
+        .extent(chartExtent)
+        .translateExtent(chartExtent)
+        .on("zoom", zoomed);
+
+      function zoomed(event) {
+        xFn.range(
+          [marginLeft + paddingLeft, width + marginLeft].map(d =>
+            event.transform.applyX(d),
+          ),
+        );
+
+        yFn.range(
+          [
+            height + marginTop - paddingTop - paddingBottom,
+            marginTop + paddingTop,
+          ].map(d => event.transform.applyY(d)),
+        );
+        xAxisG.call(xAxis);
+        yAxisG.call(yAxis);
+
+        pointsGroup.attr("transform", event.transform);
+      }
+      svg.call(zoomFunc);
+    }
   };
 
   useEffect(() => {

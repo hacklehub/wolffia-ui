@@ -25,12 +25,12 @@ stories.add("Basic Scatterplot", () => {
   return (
     <ScatterPlot
       id="random-scatter"
+      className="ring-2"
       data={data}
-      x={{ key: "independant", axisTicks: 10, start: 0 }}
+      x={{ key: "independant", axisTicks: 10 }}
       y={{
         key: "dependant",
         axisTicks: 10,
-        start: 0,
       }}
       shape={{ key: "category", map: shapeMap }}
       size={{ key: "sizeVariable", min: 10, max: 40 }}
@@ -46,7 +46,7 @@ stories.add("Basic Scatterplot", () => {
       height={300}
       paddingBottom={10}
       paddingLeft={10}
-      zoom={true}
+      zooming={{ min: 0.5, max: 5 }}
     />
   );
 });

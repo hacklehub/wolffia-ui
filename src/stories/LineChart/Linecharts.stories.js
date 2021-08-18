@@ -503,7 +503,6 @@ stories.add("Reference Lines", () => {
               className: "stroke-current text-green-500",
             },
           ]}
-          // tooltip={{ keys: ["id", "value", "reading"] }}
           referenceLines={[
             { x: 4, className: "stroke-current text-blue-200 stroke-2" },
           ]}
@@ -529,7 +528,7 @@ stories.add("Reference Lines", () => {
           referenceLines={[
             {
               yLeft: 1200,
-              className: "stroke-current text-blue-200 stroke-2",
+              className: "text-blue-200 stroke-2",
               showText: true,
             },
           ]}

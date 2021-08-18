@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
-import { select, selectAll } from "d3-selection";
+import { select, selectAll, pointer } from "d3-selection";
 import { max, min } from "d3-array";
 import { scaleLinear, scalePoint } from "d3-scale";
 
@@ -18,7 +18,7 @@ import {
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
-const LollipopHorizontalChart = ({
+const LollipopHChart = ({
   data = [],
   valueMin,
   valueMax,
@@ -33,11 +33,11 @@ const LollipopHorizontalChart = ({
   marginRight = 40,
   marginTop = 40,
   marginBottom = 40,
-  paddingLeft = 0,
+  paddingLeft = 10,
   paddingRight = 0,
   paddingBottom = 50,
   paddingTop = 0,
-
+  tooltip = {},
   labelWidth = 100,
   shape = "circle",
   x = { axis: "bottom", axisTicks: 5 },
@@ -86,8 +86,6 @@ const LollipopHorizontalChart = ({
         "transform",
         `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
       )
-      .transition()
-      .duration(1000)
       .call(xAxis);
 
     const yAxis = y.axis === "right" ? axisRight(yFn) : axisLeft(yFn);
@@ -118,7 +116,7 @@ const LollipopHorizontalChart = ({
         .attr("y2", marginTop + height)
         .attr("stroke", "currentColor");
 
-    yAxisG.transition().duration(1000).call(yAxis);
+    yAxisG.call(yAxis);
 
     const dataGroup = g.append("g");
 
@@ -127,7 +125,22 @@ const LollipopHorizontalChart = ({
         .selectAll(".line")
         .data(data)
         .enter()
-        .append("g");
+        .append("g")
+        .on("mouseover", function (event, d) {
+          tooltip && tooltipDiv.style("opacity", 1);
+          const [bX, bY] = pointer(event, select("body"));
+          tooltipDiv.style("left", `${bX + 10}px`).style("top", `${bY + 10}px`);
+          tooltipDiv.html(
+            tooltip && tooltip.html
+              ? tooltip.html(d)
+              : tooltip.keys
+              ? tooltip.keys.map(key => `${key}: ${d[key] || ""}`).join("<br/>")
+              : `${d[y.key]}: ${d[x.key]}`,
+          );
+        })
+        .on("mouseleave", function (event, d) {
+          tooltip && tooltipDiv.style("opacity", "0");
+        });
 
       pointGroup
         .append("line")
@@ -137,7 +150,7 @@ const LollipopHorizontalChart = ({
             classNameLines || ""
           }`,
         )
-        .attr("x1", labelWidth)
+        .attr("x1", labelWidth + paddingLeft)
         .attr("y1", d => yFn(d[y.key]))
         .attr("x2", labelWidth)
         .attr("y2", d => yFn(d[y.key]))
@@ -154,7 +167,10 @@ const LollipopHorizontalChart = ({
           }`,
         )
         .attr("d", d => symbol(shapeMapping[shape], 100)())
-        .attr("transform", d => `translate(${labelWidth},${yFn(d[y.key])})`)
+        .attr(
+          "transform",
+          d => `translate(${labelWidth + paddingLeft},${yFn(d[y.key])})`,
+        )
         .transition()
         .duration(1000)
         .attr(
@@ -164,6 +180,13 @@ const LollipopHorizontalChart = ({
     };
 
     drawLinesAndCircles();
+
+    const tooltipDiv = select("#root")
+      .append("div")
+      .attr("id", "tooltip")
+      .style("position", "absolute")
+      .style("opacity", "0")
+      .attr("class", `tooltip ${(tooltip && tooltip.className) || ""}`);
   };
 
   useEffect(() => {
@@ -182,7 +205,7 @@ const LollipopHorizontalChart = ({
   );
 };
 
-LollipopHorizontalChart.propTypes = {
+LollipopHChart.propTypes = {
   className: PropTypes.string, // Tailwind classes to be added to the chart
   data: PropTypes.arrayOf(PropTypes.object),
   id: PropTypes.string.isRequired, // Need this so that chart can be selected uniquely to a page
@@ -196,4 +219,4 @@ LollipopHorizontalChart.propTypes = {
   label: PropTypes.string,
 };
 
-export default LollipopHorizontalChart;
+export default LollipopHChart;
