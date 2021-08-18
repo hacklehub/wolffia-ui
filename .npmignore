@@ -1,0 +1,11 @@
+# .npmignore
+
+src/
+tests/
+.babelrc
+!dist/
+*.tgz
+.storybook/
+.vscode/
+
+dist/stories

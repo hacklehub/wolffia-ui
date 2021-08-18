@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import { select, pointer, selectAll } from "d3-selection";
@@ -177,7 +177,8 @@ const LineChart = props => {
     const yRightAxis = allRightY.length > 0 && axisRight(yRightFn);
 
     const yLeftLabels =
-      allLeftY.length > 0 && allLeftY.map(column => column.axisLabel);
+      allLeftY.length > 0 &&
+      allLeftY.map(column => column.axisLabel || column.key);
 
     const yRightLabels =
       allRightY.length > 0 &&

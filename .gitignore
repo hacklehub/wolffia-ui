@@ -4,3 +4,4 @@ dist/
 
 # We can ignore archives, we will be creating one shortly:
 *.tgz
+package/

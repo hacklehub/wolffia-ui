@@ -4,12 +4,15 @@ Wolffia-UI (named after Wolffia - The smallest flower) is our data visualization
 
 ## Getting started
 
-1. Create react app
+1. Create react app (https://create-react-app.dev/docs/getting-started)
 2. Install tailwindcss to your react app (https://tailwindcss.com/docs/guides/create-react-app)
+3. Install peer dependency - d3, luxon (if you are using line-charts)
 
-To install wolffia-ui to your React app, 
+4. To install wolffia-ui to your React app, 
 
     npm install --save wolffia-ui
+
+### Usage
 
 To import a chart,
 
