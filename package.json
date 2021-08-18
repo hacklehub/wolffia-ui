@@ -1,6 +1,6 @@
 {
   "name": "wolffia-ui",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Charting library with d3js and tailwindcss",
   "main": "./dist/index.js",
   "scripts": {
