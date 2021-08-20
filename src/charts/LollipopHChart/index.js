@@ -20,8 +20,6 @@ import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
 const LollipopHChart = ({
   data = [],
-  valueMin,
-  valueMax,
   id,
   className,
   classNamePoints,
@@ -62,8 +60,8 @@ const LollipopHChart = ({
 
     const xFn = scaleLinear()
       .domain([
-        Number.isFinite(valueMin) ? valueMin : min(data, d => d[x.key]),
-        Number.isFinite(valueMax) ? valueMax : max(data, d => d[x.key]),
+        Number.isFinite(x.start) ? x.start : min(data, d => d[x.key]),
+        Number.isFinite(x.end) ? x.end : max(data, d => d[x.key]),
       ])
       .range([labelWidth + paddingLeft, paddingLeft + width]);
 

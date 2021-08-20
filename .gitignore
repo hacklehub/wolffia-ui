@@ -1,5 +1,7 @@
-node_modules
-storybook-static
+
+node_modules/
 dist/
 
+# We can ignore archives, we will be creating one shortly:
 *.tgz
+package/

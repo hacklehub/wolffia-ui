@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import { select, pointer, selectAll } from "d3-selection";
@@ -22,11 +22,11 @@ import {
 } from "d3-shape";
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
-import { easeSin } from "d3-ease";
 import { transition } from "d3-transition";
 import { DateTime } from "luxon";
 
 import "./styles.css";
+import { easeLinear } from "d3-ease";
 
 /**
  * Display a line chart
@@ -38,29 +38,28 @@ import "./styles.css";
  *
  */
 
-const LineChart = props => {
-  const {
-    data = [],
-    id,
-    className,
-    x,
-    y,
-    tooltip,
-    zooming,
-    width = 490,
-    height = 200,
-    paddingLeft = 0,
-    paddingRight = 0,
-    paddingBottom = 0,
-    paddingTop = 0,
-    marginLeft = 40,
-    marginRight = 40,
-    marginTop = 40,
-    marginBottom = 40,
-    showGuidelines = false,
-    referenceLines = [],
-  } = props;
-
+const LineChart = ({
+  data = [],
+  id,
+  className,
+  x,
+  y,
+  tooltip,
+  drawing = {},
+  zooming,
+  width = 490,
+  height = 200,
+  paddingLeft = 0,
+  paddingRight = 0,
+  paddingBottom = 0,
+  paddingTop = 0,
+  marginLeft = 40,
+  marginRight = 40,
+  marginTop = 40,
+  marginBottom = 40,
+  showGuidelines = false,
+  referenceLines = [],
+}) => {
   // Todo partial stroke-dashed
   const refreshChart = async () => {
     const shapeMapping = {
@@ -177,13 +176,12 @@ const LineChart = props => {
     const yRightAxis = allRightY.length > 0 && axisRight(yRightFn);
 
     const yLeftLabels =
-      allLeftY.length > 0 && allLeftY.map(column => column.axisLabel);
+      allLeftY.length > 0 &&
+      allLeftY.map(column => column.axisLabel || column.key);
 
     const yRightLabels =
       allRightY.length > 0 &&
-      allRightY
-        .filter(column => column.axisLabel)
-        .map(column => column.axisLabel);
+      allRightY.map(column => column.axisLabel || column.key);
 
     const xAxisG = g.append("g").attr("class", "axis--x axis ");
 
@@ -251,7 +249,7 @@ const LineChart = props => {
       g
         .append("g")
         .attr("class", "axis axis--right-y")
-        .attr("transform", `translate(${width + marginLeft},0)`);
+        .attr("transform", `translate(${width + marginLeft + paddingRight},0)`);
 
     yRightAxisG && yRightAxisG.call(yRightAxis);
 
@@ -271,9 +269,9 @@ const LineChart = props => {
         .append("text")
         .text(yLeftLabels.join(", "))
         .attr("fill", "currentColor")
-        .attr("text-anchor", "start")
-        .attr("x", -marginLeft)
-        .attr("y", marginTop - 5)
+        .attr("text-anchor", "middle")
+        .attr("x", 0)
+        .attr("y", marginTop - 15)
         .style("font-size", "1.1em");
 
     yRightLabels &&
@@ -282,8 +280,9 @@ const LineChart = props => {
         .append("text")
         .text(yRightLabels.join(", "))
         .attr("fill", "currentColor")
-        .attr("x", 2)
-        .attr("y", marginTop - 5)
+        .attr("text-anchor", "middle")
+        .attr("x", 0)
+        .attr("y", marginTop - 15)
         .style("font-size", "1.1em");
 
     const clipPath = svg
@@ -335,7 +334,19 @@ const LineChart = props => {
           .attr("clip-path", "url(#clip)")
           .attr("d", newLine);
 
+        if (drawing && drawing.duration) {
+          const l = seriesPath.node().getTotalLength();
+
+          seriesPath
+            .attr("stroke-dasharray", `0,${l}`)
+            .transition()
+            .ease(easeLinear)
+            .duration(drawing.duration)
+            .attr("stroke-dasharray", `${l},${l}`);
+        }
+
         const leftCircles =
+          column.symbol &&
           column.symbol !== "none" &&
           leftG
             .selectAll(".left-g")
@@ -349,7 +360,6 @@ const LineChart = props => {
                 .size(column.size || 16),
             )
             .attr("class", `left-circles ${column.className} fill-current`)
-            // .attr("clip-path", "url(#clip)")
             .attr(
               "transform",
               d =>
@@ -397,30 +407,42 @@ const LineChart = props => {
           .attr("clip-path", "url(#clip)")
           .attr("d", newLine);
 
-        const circles = rightG
-          .selectAll(".right-g")
-          .data(seriesData)
-          .enter()
-          .append("path")
-          .attr("clip-path", "url(#clip)")
-          .attr(
-            "d",
-            symbol()
-              .type(shapeMapping[column.symbol] || symbolCircle)
-              .size(column.size || 16),
-          )
-          .attr("class", `right-circles ${column.className} fill-current`)
-          .attr(
-            "transform",
-            d =>
-              `translate(${
-                x.scalingFunction === "time"
-                  ? xFn(toDateTime(d))
-                  : xFn(d[x.key])
-              },${yRightFn(
-                d[column.key] || (column.unknown === "zero" && 0),
-              )})`,
-          );
+        if (drawing && drawing.duration) {
+          const l = seriesPath.node().getTotalLength();
+
+          seriesPath
+            .attr("stroke-dasharray", `0,${l}`)
+            .transition()
+            .duration(drawing.duration)
+            .attr("stroke-dasharray", `${l},${l}`);
+        }
+
+        const rightCircles =
+          column.symbol &&
+          column.symbol !== "none" &&
+          leftG
+            .selectAll(".right-g")
+            .data(seriesData)
+            .enter()
+            .append("path")
+            .attr(
+              "d",
+              symbol()
+                .type(shapeMapping[column.symbol] || symbolCircle)
+                .size(column.size || 16),
+            )
+            .attr("class", `left-circles ${column.className} fill-current`)
+            .attr(
+              "transform",
+              d =>
+                `translate(${
+                  x.scalingFunction === "time"
+                    ? xFn(toDateTime(d))
+                    : xFn(d[x.key])
+                },${yRightFn(
+                  d[column.key] || (column.unknown === "zero" && 0),
+                )})`,
+            );
       });
     };
 
@@ -634,13 +656,13 @@ const LineChart = props => {
     return () => {
       selectAll(".tooltip").remove();
     };
-  }, [props]);
+  }, [data, x, y, referenceLines]);
 
   return (
     <svg
       id={id}
       className={`${className}`}
-      width={width + marginLeft + marginRight}
+      width={width + marginLeft + marginRight + paddingLeft + paddingRight}
       height={height + marginTop + marginBottom}
     />
   );
@@ -672,6 +694,7 @@ LineChart.propTypes = {
       className: PropTypes.string,
       curve: PropTypes.oneOf(["rounded", "step", "line"]),
       symbol: PropTypes.oneOf([
+        "none",
         "circle",
         "square",
         "star",

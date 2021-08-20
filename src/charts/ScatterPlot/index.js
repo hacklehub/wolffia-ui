@@ -241,10 +241,9 @@ const ScatterPlot = ({
       // selectAll(".axisPointLine").remove();
       tooltip &&
         tooltipDiv
-          .transition()
-          .duration(400)
           .style("opacity", "0")
-          .style("padding", "0px");
+          .style("left", `0px`)
+          .style("top", `0px`);
     }
 
     //Add styles from style prop
