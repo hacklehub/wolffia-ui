@@ -13,12 +13,23 @@ stories.add("Getting started", () => {
   return (
     <div>
       <BulletChart
-        id="bullet-start"
+        id="bullet-jan"
         className="dark:text-white "
-        label="Bangalore"
-        data={100}
-        min={80}
+        label="January"
+        data={108}
         base={90}
+        target={105}
+        threshold={110}
+        max={120}
+      />
+      <BulletChart
+        id="bullet-feb"
+        className="dark:text-white "
+        classNameData="text-blue-400 dark:text-blue-800 "
+        label="February"
+        data={111}
+        base={90}
+        target={102}
         threshold={110}
         max={120}
       />

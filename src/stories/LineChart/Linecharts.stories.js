@@ -538,6 +538,31 @@ stories.add("Reference Lines", () => {
   );
 });
 
+stories.add("Drawing", () => {
+  return (
+    <>
+      <LineChart
+        id="horiz-refer-chart"
+        data={data}
+        x={{ key: "id", axisLabel: "Position" }}
+        drawing={{ duration: 5000 }}
+        y={[
+          {
+            key: "value",
+            axis: "left",
+            start: 0,
+            className: "stroke-current text-red-500",
+          },
+          {
+            key: "reading",
+            className: "stroke-current text-green-500",
+          },
+        ]}
+      />
+    </>
+  );
+});
+
 stories.add("Zoom", () => {
   return (
     <>
@@ -567,6 +592,36 @@ stories.add("Zoom", () => {
         />
       </div>
     </>
+  );
+});
+
+stories.add("Connected Dots", () => {
+  return (
+    <LineChart
+      id="horiz-refer-chart"
+      data={data}
+      className="border rounded"
+      marginLeft={50}
+      marginRight={50}
+      x={{ key: "id", axisLabel: "Position" }}
+      y={[
+        {
+          key: "value",
+          axis: "left",
+          start: 0,
+          symbol: "circle",
+          className: "stroke-current text-red-500",
+        },
+        {
+          key: "reading",
+          axis: "right",
+          symbol: "diamond",
+          className: "stroke-current text-green-500",
+        },
+      ]}
+      paddingLeft={15}
+      paddingRight={15}
+    />
   );
 });
 
@@ -601,7 +656,6 @@ stories.add("Time series", () => {
             key: "value",
             axis: "left",
             start: 0,
-            symbol: "none",
             className: "text-red-200 stroke-current",
             curve: "rounded",
             circleFill: true,

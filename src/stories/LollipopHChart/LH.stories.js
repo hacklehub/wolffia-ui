@@ -31,6 +31,7 @@ stories.add("Simple Lollipop Horizontal", () => {
           x={{
             key: "reading",
             axisTicks: 2,
+            start: 0,
           }}
           y={{
             key: "name",
