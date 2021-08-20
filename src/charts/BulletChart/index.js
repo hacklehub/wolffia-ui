@@ -4,33 +4,30 @@ import { scaleLinear } from "d3-scale";
 import { axisBottom } from "d3-axis";
 import { select, selectAll, pointer } from "d3-selection";
 
-const BulletChart = props => {
-  const {
-    id,
-    className,
-    data = 0,
-    classNameData = "text-blue-500",
-    label = "",
-    min = 0,
-    classNameBase = "text-gray-400",
-    base,
-    classNameTarget = "text-black",
-    target,
-    threshold,
-    classNameThreshold = `text-gray-300`,
-    max,
-    classNameMax = `text-gray-200`,
-    width = 450,
-    labelWidth = 150,
-    axisHeight = 20,
-    height = 50,
-    paddingTop = 10,
-    paddingRight = 10,
-  } = props;
-
+const BulletChart = ({
+  id,
+  className,
+  data = 0,
+  classNameData = "text-blue-500",
+  label = "",
+  min = 0,
+  classNameBase = "text-gray-400",
+  base,
+  classNameTarget = "text-black",
+  target,
+  threshold,
+  classNameThreshold = `text-gray-300`,
+  max,
+  classNameMax = `text-gray-200`,
+  width = 450,
+  labelWidth = 150,
+  axisHeight = 20,
+  height = 50,
+  paddingTop = 10,
+  paddingRight = 10,
+}) => {
   const refreshChart = async () => {
     const svg = select(`#${id}`);
-    // Clear svg
 
     svg.selectAll("*").remove();
 
@@ -102,12 +99,6 @@ const BulletChart = props => {
     xAxisG
       .attr("transform", `translate(${labelWidth}, ${height - axisHeight})`)
       .call(xAxis);
-
-    /*g.append("rect")
-      .attr("x", xFn(0))
-      .attr("y", 0)
-      .attr("width", xFn(max))
-      .attr("height", height);*/
   };
 
   useEffect(() => {
@@ -115,7 +106,16 @@ const BulletChart = props => {
     return () => {
       selectAll(".tooltip").remove();
     };
-  }, [props]);
+  }, [
+    data,
+    min,
+    base,
+    target,
+    threshold,
+    classNameData,
+    classNameTarget,
+    classNameThreshold,
+  ]);
 
   return (
     <svg

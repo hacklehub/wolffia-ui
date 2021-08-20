@@ -25,7 +25,6 @@ const BarChartGrouped = ({
   marginTop = 40,
   marginBottom = 40,
   referenceLines = [],
-  labelWidth = 150,
   x,
   y,
   tooltip,
@@ -44,8 +43,8 @@ const BarChartGrouped = ({
 
     const xFnRange =
       direction === "left"
-        ? [width, labelWidth + paddingLeft]
-        : [labelWidth, width - paddingRight];
+        ? [width, marginLeft + paddingLeft]
+        : [marginLeft, width - paddingRight];
 
     const xFn = scaleLinear()
       .domain([
@@ -74,7 +73,7 @@ const BarChartGrouped = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${direction === "left" ? width : labelWidth},0)`,
+        `translate(${direction === "left" ? width : marginWidth},0)`,
       );
 
     x.map((column, i) => {
@@ -205,7 +204,7 @@ const BarChartGrouped = ({
     <svg
       id={id}
       className={`${className}`}
-      width={width + marginLeft + marginRight}
+      width={width + marginLeft + marginRight + paddingLeft + paddingRight}
       height={height + marginTop + marginBottom}
     />
   );

@@ -25,11 +25,11 @@ const ScatterPlot = ({
   data,
   id,
   className,
+  classNamePoints,
   x,
   y,
   size,
   tooltip,
-  color,
   shape,
   width = 500,
   height = 200,
@@ -42,7 +42,12 @@ const ScatterPlot = ({
   paddingBottom = 0,
   paddingTop = 0,
   style = {},
+  onClick,
   zooming = false,
+  drawing,
+  connect = {
+    classNameLine: "",
+  },
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
@@ -154,13 +159,6 @@ const ScatterPlot = ({
         .domain(extent(data, d => d[size.key]))
         .range([size.min, size.max]);
 
-    const colorScale =
-      color &&
-      color.map &&
-      scaleOrdinal()
-        .domain(Object.keys(color.map))
-        .range(Object.values(color.map));
-
     const shapeMapping = {
       circle: symbolCircle,
       diamond: symbolDiamond,
@@ -173,12 +171,10 @@ const ScatterPlot = ({
 
     const shapeScale =
       shape &&
-      shape.map &&
+      shape.shapeMap &&
       scaleOrdinal()
-        .domain(Object.keys(shape.map))
-        .range(Object.values(shape.map).map(shape => shapeMapping[shape]));
-
-    // Todo Add brushing
+        .domain(Object.keys(shape.shapeMap))
+        .range(Object.values(shape.shapeMap).map(shape => shapeMapping[shape]));
 
     // Tooltips
     const tooltipDiv = select("body")
@@ -197,27 +193,54 @@ const ScatterPlot = ({
     // Drawing
     const pointsGroup = g.append("g");
 
-    pointsGroup
+    const points = pointsGroup
       .selectAll(".points")
       .data(data)
       .enter()
       .append("path")
-      .attr("class", "points")
-      .attr("d", d =>
-        symbol(
-          shapeScale
-            ? shapeScale(d[shape.key])
-            : shapeMapping[shape.default || "circle"],
-          sizeScale ? sizeScale(d[size.key]) : size.default || 12,
-        )(),
+      .attr(
+        "class",
+        d =>
+          `points fill-current stroke-current ${
+            classNamePoints && classNamePoints.classMap
+              ? classNamePoints.classMap[d[classNamePoints.key]]
+              : ``
+          }`,
       )
-      .attr("fill", d =>
-        d.fill || colorScale ? colorScale(d[color.key]) : "#000000",
+      .attr("d", d =>
+        drawing && drawing.duration
+          ? ``
+          : symbol(
+              shapeScale
+                ? shapeScale(d[shape.key])
+                : shape.shape
+                ? shapeMapping[shape.shape]
+                : shapeMapping[shape.default || "circle"],
+              sizeScale ? sizeScale(d[size.key]) : size.default || 12,
+            )(),
       )
       .attr("transform", d => `translate(${xFn(d[x.key])},${yFn(d[y.key])})`)
       .on("mouseenter", onMouseOverG)
       .on("mousemove", onMouseMove)
-      .on("mouseleave", onMouseLeave);
+      .on("mouseleave", onMouseLeave)
+      .on("click", (event, d) => {
+        onClick(event, d);
+      });
+
+    drawing &&
+      drawing.duration &&
+      points
+        .transition()
+        .delay((d, i) => (drawing.delay ? i * 50 : 0))
+        .duration(drawing.duration)
+        .attr("d", d =>
+          symbol(
+            shapeScale
+              ? shapeScale(d[shape.key])
+              : shapeMapping[shape.default || "circle"],
+            sizeScale ? sizeScale(d[size.key]) : size.default || 12,
+          )(),
+        );
 
     function onMouseMove(event) {
       const [bX, bY] = pointer(event, select("body"));

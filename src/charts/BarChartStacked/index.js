@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 
 import { select, selectAll, pointer } from "d3-selection";
 import { max, min, sum } from "d3-array";
+import { format } from "d3-format";
 import { scaleLinear, scalePoint, scaleBand } from "d3-scale";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
@@ -12,21 +13,20 @@ const BarChartGrouped = ({
   id,
   className,
   direction = "right",
-  width = 490,
-
+  width = 400,
   height = 200,
   paddingBar = 0.3,
   paddingLeft = 0,
   paddingRight = 0,
   paddingBottom = 0,
   paddingTop = 0,
-  marginLeft = 40,
+  marginLeft = 60,
   marginRight = 40,
   marginTop = 40,
   marginBottom = 40,
   referenceLines = [],
-  labelWidth = 150,
   x,
+  tickFormat,
   y,
   tooltip,
   drawing,
@@ -45,8 +45,11 @@ const BarChartGrouped = ({
 
     const xFnRange =
       direction === "left"
-        ? [width, labelWidth + paddingLeft]
-        : [labelWidth + paddingLeft, width - paddingRight];
+        ? [width, marginRight + paddingRight]
+        : [
+            marginLeft + paddingLeft,
+            marginLeft + paddingLeft + width - paddingRight,
+          ];
 
     const xFn = scaleLinear()
       .domain([0, max(data.map(d => sum(x.map(value => d[value.key]))))])
@@ -147,6 +150,8 @@ const BarChartGrouped = ({
         ? axisTop(xFn).ticks(x.axisTicks || 5)
         : axisBottom(xFn).ticks(x.axisTicks || 5);
 
+    tickFormat && tickFormat === "%" && xAxis.tickFormat(format(".0%"));
+
     const xAxisG = g.append("g").attr("class", "axis--x axis ");
 
     const yAxis = direction === "left" ? axisRight(yFn) : axisLeft(yFn);
@@ -155,7 +160,7 @@ const BarChartGrouped = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${direction === "left" ? width : labelWidth},0)`,
+        `translate(${direction === "left" ? width : marginLeft},0)`,
       );
 
     xAxisG
