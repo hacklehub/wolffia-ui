@@ -21,6 +21,7 @@ import {
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
+import { mergeTailwindClasses } from "../../utils";
 const ScatterPlot = ({
   data,
   id,
@@ -31,16 +32,14 @@ const ScatterPlot = ({
   size,
   tooltip,
   shape,
-  width = 500,
-  height = 200,
   marginLeft = 40,
-  marginRight = 40,
+  marginRight = 20,
   marginTop = 40,
   marginBottom = 40,
-  paddingLeft = 0,
-  paddingRight = 0,
-  paddingBottom = 0,
-  paddingTop = 0,
+  paddingLeft = 10,
+  paddingRight = 10,
+  paddingBottom = 10,
+  paddingTop = 10,
   style = {},
   onClick,
   zooming = false,
@@ -55,11 +54,14 @@ const ScatterPlot = ({
 
     svg.selectAll("*").remove();
 
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     const g = svg.append("g");
 
     const xFn = scaleLinear().range([
       marginLeft + paddingLeft,
-      width + marginLeft,
+      width - marginRight,
     ]);
 
     const setDefaultDomain = (xFn, yFn) => {
@@ -95,7 +97,7 @@ const ScatterPlot = ({
     );
 
     const yFn = scaleLinear().range([
-      height + marginTop - paddingTop - paddingBottom,
+      height - marginBottom - paddingTop - paddingBottom,
       marginTop + paddingTop,
     ]);
 
@@ -109,7 +111,7 @@ const ScatterPlot = ({
       .attr("class", "xAxis axis")
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       );
 
     xAxisG.transition().duration(400).call(xAxis);
@@ -169,12 +171,12 @@ const ScatterPlot = ({
       wye: symbolWye,
     };
 
-    const shapeScale =
+    /*const shapeScale =
       shape &&
       shape.shapeMap &&
       scaleOrdinal()
         .domain(Object.keys(shape.shapeMap))
-        .range(Object.values(shape.shapeMap).map(shape => shapeMapping[shape]));
+        .range(Object.values(shape.shapeMap).map(shape => shapeMapping[shape]));*/
 
     // Tooltips
     const tooltipDiv = select("body")
@@ -182,10 +184,12 @@ const ScatterPlot = ({
       .attr("id", "tooltip")
       .style("transition-property", "opacity")
       .style("transition-duration", "1000")
-      .style("position", "absolute");
+      .style("position", "absolute")
+      .attr("opacity", "0");
 
-    tooltipDiv.attr("class", `tooltip ${tooltip.className || ""}`);
-    tooltip.style &&
+    tooltipDiv.attr("class", `tooltip ${tooltip?.className || ""}`);
+    tooltip &&
+      tooltip.style &&
       Object.entries(tooltip.style).map(([key, value]) =>
         tooltipDiv.style(key, value),
       );
@@ -202,21 +206,19 @@ const ScatterPlot = ({
         "class",
         d =>
           `points fill-current stroke-current ${
-            classNamePoints && classNamePoints.classMap
+            /*classNamePoints.classMap
               ? classNamePoints.classMap[d[classNamePoints.key]]
-              : ``
+              : */ ``
           }`,
       )
       .attr("d", d =>
         drawing && drawing.duration
           ? ``
           : symbol(
-              shapeScale
-                ? shapeScale(d[shape.key])
-                : shape.shape
-                ? shapeMapping[shape.shape]
-                : shapeMapping[shape.default || "circle"],
-              sizeScale ? sizeScale(d[size.key]) : size.default || 12,
+              shape?.shapeMap
+                ? shape.shapeMap[d[shape.key]]
+                : shapeMapping["circle"],
+              sizeScale ? sizeScale(d[size.key]) : size?.default || 12,
             )(),
       )
       .attr("transform", d => `translate(${xFn(d[x.key])},${yFn(d[y.key])})`)
@@ -224,7 +226,7 @@ const ScatterPlot = ({
       .on("mousemove", onMouseMove)
       .on("mouseleave", onMouseLeave)
       .on("click", (event, d) => {
-        onClick(event, d);
+        onClick && onClick(event, d);
       });
 
     drawing &&
@@ -235,9 +237,9 @@ const ScatterPlot = ({
         .duration(drawing.duration)
         .attr("d", d =>
           symbol(
-            shapeScale
-              ? shapeScale(d[shape.key])
-              : shapeMapping[shape.default || "circle"],
+            shape && shape.shapeMap
+              ? shape.shapeMap[d[shape.key]]
+              : shapeMapping["circle"],
             sizeScale ? sizeScale(d[size.key]) : size.default || 12,
           )(),
         );
@@ -250,9 +252,9 @@ const ScatterPlot = ({
     function onMouseOverG(event, row) {
       tooltip && tooltipDiv.style("opacity", 1);
       tooltipDiv.html(
-        tooltip.html
+        tooltip?.html
           ? tooltip.html(row)
-          : tooltip.keys
+          : tooltip?.keys
           ? tooltip.keys.map(key => `${key}: ${row[key] || ""}`).join("<br/>")
           : Object.entries(row)
               .map(([key, value]) => `${key}: ${value}`)
@@ -262,11 +264,8 @@ const ScatterPlot = ({
 
     function onMouseLeave(event) {
       // selectAll(".axisPointLine").remove();
-      tooltip &&
-        tooltipDiv
-          .style("opacity", "0")
-          .style("left", `0px`)
-          .style("top", `0px`);
+
+      tooltipDiv.style("opacity", "0").style("left", `0px`).style("top", `0px`);
     }
 
     //Add styles from style prop
@@ -310,13 +309,16 @@ const ScatterPlot = ({
 
   useEffect(() => {
     refreshChart();
+    return () => {
+      selectAll(".tooltip").remove();
+    };
   }, [data]);
   return (
     <svg
       id={id}
-      className={`${className}`}
-      width={width + marginLeft + marginRight}
-      height={height + marginTop + marginBottom}
+      className={mergeTailwindClasses(`chart h-64`, className || "")}
+      //width={width + marginLeft + marginRight}
+      // height={height + marginTop + marginBottom}
     />
   );
 };

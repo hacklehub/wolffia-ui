@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import "../../styles.css";
+
 import PropTypes from "prop-types";
 
 import { select, selectAll, pointer } from "d3-selection";
@@ -8,24 +10,25 @@ import { scaleLinear, scalePoint, scaleBand } from "d3-scale";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
+import { mergeTailwindClasses } from "../../utils";
+
 const BarChartStacked = ({
   data = [],
   id,
   className,
   direction = "right",
-  width = 400,
-  height = 200,
+  // height = 200,
   paddingBar = 0.3,
   paddingLeft = 0,
   paddingRight = 0,
   paddingBottom = 0,
   paddingTop = 0,
   marginLeft = 60,
-  marginRight = 40,
-  marginTop = 40,
-  marginBottom = 40,
+  marginRight = direction === "right" ? 20 : 40,
+  marginTop = x && x.axis === "top" ? 40 : 20,
+  marginBottom = x && x.axis === "top" ? 20 : 40,
   referenceLines = [],
-  waterfall = false,
+  waterfall,
   x,
   tickFormat,
   y,
@@ -33,24 +36,32 @@ const BarChartStacked = ({
   drawing,
   dataLabel = false,
 }) => {
+  const formatMapping = {
+    "%": ".0%",
+    $: "($.2f",
+    tri: ",.2r",
+    hex: "#x",
+    SI: ".2s",
+  };
+
   const refreshChart = () => {
     const svg = select(`#${id}`);
     svg.selectAll("*").remove();
+
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
 
     const g = svg.append("g");
 
     const yFn = scaleBand()
       .domain(data.map(d => d[y.key]))
-      .range([marginTop + paddingTop, marginTop + height - paddingBottom])
+      .range([marginTop + paddingTop, height - marginBottom - paddingBottom])
       .padding(paddingBar);
 
     const xFnRange =
       direction === "left"
-        ? [width, marginRight + paddingRight]
-        : [
-            marginLeft + paddingLeft,
-            marginLeft + paddingLeft + width - paddingRight,
-          ];
+        ? [width - marginRight - paddingRight, marginLeft + paddingLeft]
+        : [marginLeft + paddingLeft, width - marginRight - paddingRight];
 
     const xFn = scaleLinear()
       .domain([0, max(data.map(d => sum(x.map(value => d[value.key]))))])
@@ -60,7 +71,7 @@ const BarChartStacked = ({
       const barsG = g.append("g");
 
       // Cumulative columns
-      const columns = x.filter((_, idx) => idx < i).map(c => c.key);
+      const afterColumns = x.filter((_, idx) => idx > i).map(c => c.key);
 
       const bars = barsG
         .selectAll("g")
@@ -68,23 +79,28 @@ const BarChartStacked = ({
         .enter()
         .append("rect")
         .attr("class", `${column.className} fill-current`)
-        .attr("x", d => (waterfall ? xFn(sum(columns.map(c => d[c]))) : xFn(0)))
+        .attr("x", d =>
+          waterfall ? xFn(sum(afterColumns.map(c => d[c]))) : xFn(0),
+        )
         .attr(
           "y",
           (d, idx) =>
             yFn(d[y.key]) + (waterfall ? (yFn.bandwidth() / x.length) * i : 0),
         )
-        .style("z-index", 10 - i)
+        .style("z-index", 10 + i)
         .attr("width", d => {
           return drawing && drawing.duration
             ? 0
             : waterfall
-            ? xFn(d[column.key]) - xFn(0)
-            : xFn(sum(columns.map(c => d[c]))) - xFn(0);
+            ? xFn(d[column.key] || 0) - xFn(0)
+            : xFn(sum(afterColumns.map(c => d[c])) + (d[column.key] || 0)) -
+              xFn(0);
         })
         .attr(
           "height",
-          waterfall ? yFn.bandwidth() / x.length : yFn.bandwidth(),
+          waterfall
+            ? yFn.bandwidth() / x.length - waterfall.padding
+            : yFn.bandwidth(),
         )
         .on("mouseenter", function (event, d) {
           if (tooltip) {
@@ -100,7 +116,13 @@ const BarChartStacked = ({
                 ? tooltip.keys
                     .map(key => `${key}: ${d[key] || ""}`)
                     .join("<br/>")
-                : `${d[y.key]} <br/> ${column.key} ${d[column.key]}`,
+                : `${d[y.key]} <br/> ${column.key} ${
+                    tickFormat
+                      ? formatMapping[tickFormat]
+                        ? format(formatMapping[tickFormat])
+                        : format(tickFormat)
+                      : d[column.key]
+                  }`,
             );
           }
         })
@@ -157,12 +179,16 @@ const BarChartStacked = ({
       .style("opacity", "0")
       .attr("class", `tooltip ${(tooltip && tooltip.className) || ""}`);
 
-    const xAxis =
-      x.axis === "top"
-        ? axisTop(xFn).ticks(x.axisTicks || 5)
-        : axisBottom(xFn).ticks(x.axisTicks || 5);
+    const xAxis = x.some(column => column.axis === "top")
+      ? axisTop(xFn).ticks(x.axisTicks || 5)
+      : axisBottom(xFn).ticks(x.axisTicks || 5);
 
-    tickFormat && tickFormat === "%" && xAxis.tickFormat(format(".0%"));
+    tickFormat &&
+      xAxis.tickFormat(
+        formatMapping[tickFormat]
+          ? format(formatMapping[tickFormat])
+          : format(tickFormat),
+      );
 
     const xAxisG = g.append("g").attr("class", "axis--x axis ");
 
@@ -178,7 +204,7 @@ const BarChartStacked = ({
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       )
       .call(xAxis);
 
@@ -193,13 +219,41 @@ const BarChartStacked = ({
   }, [data]);
 
   return (
-    <svg
-      id={id}
-      className={`${className}`}
-      width={width + marginLeft + marginRight}
-      height={height + marginTop + marginBottom}
-    />
+    <>
+      <svg
+        id={id}
+        className={mergeTailwindClasses(`chart h-64`, className || "")}
+      />
+    </>
   );
+};
+
+BarChartStacked.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.object).isRequired,
+  id: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  direction: PropTypes.string,
+  width: PropTypes.number,
+  height: PropTypes.number,
+  paddingLeft: PropTypes.number,
+  paddingRight: PropTypes.number,
+  paddingBottom: PropTypes.number,
+  paddingBar: PropTypes.number,
+  paddingTop: PropTypes.number,
+  marginLeft: PropTypes.number,
+  marginRight: PropTypes.number,
+  marginTop: PropTypes.number,
+  marginBottom: PropTypes.number,
+  referenceLines: PropTypes.arrayOf(PropTypes.object),
+  x: PropTypes.arrayOf(PropTypes.object).isRequired,
+  y: PropTypes.object.isRequired,
+  tooltip: PropTypes.shape({
+    html: PropTypes.func,
+    className: PropTypes.string,
+    keys: PropTypes.arrayOf(PropTypes.string),
+  }),
+  drawing: PropTypes.object,
+  dataLabel: PropTypes.bool,
 };
 
 export default BarChartStacked;

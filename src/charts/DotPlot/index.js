@@ -1,4 +1,6 @@
 import React, { useEffect } from "react";
+import PropTypes from "prop-types";
+import "../../styles.css";
 
 import { max, min } from "d3-array";
 
@@ -17,11 +19,11 @@ import {
 } from "d3-shape";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
+import { mergeTailwindClasses } from "../../utils";
 
 const DotPlot = ({
   id,
   className,
-  height = 300,
   data = [],
   classNameData,
   y = { key: "label" },
@@ -29,13 +31,11 @@ const DotPlot = ({
   marginTop = 40,
   marginBottom = 40,
   marginLeft = 40,
-  marginRight = 40,
+  marginRight = 20,
   paddingTop = 0,
   paddingLeft = 0,
   paddingRight = 0,
-  paddingBottom = 40,
-  labelWidth = 150,
-  width = 450,
+  paddingBottom = 20,
   shape = "circle",
   tooltip = {},
   zooming,
@@ -55,6 +55,9 @@ const DotPlot = ({
 
     svg.selectAll("*").remove();
 
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     const g = svg.append("g");
 
     const xFn = scaleLinear()
@@ -66,30 +69,20 @@ const DotPlot = ({
           ? x.maxValue
           : max(data.map(d => d[x.maxKey])),
       ])
-      .range([labelWidth, width - paddingRight]);
+      .range([marginLeft, width - paddingRight - marginRight]);
 
     const yFn = scalePoint()
       .domain(data.map(d => d[y.key]))
-      // .range([height + marginTop - paddingBottom, marginTop + paddingTop])
-      .range([marginTop + paddingTop, marginTop + height - paddingBottom]);
+      .range([marginTop + paddingTop, height - marginBottom - paddingBottom]);
 
     const clipPath = svg
       .append("clipPath")
       .attr("id", "clip")
       .append("rect")
-      .attr("x", labelWidth)
+      .attr("x", marginLeft)
       .attr("y", marginTop - paddingTop - 10)
       .attr("width", width)
       .attr("height", height + paddingBottom + 8);
-
-    const axisClipPath = svg
-      .append("clipPath")
-      .attr("id", "axis-clip")
-      .append("rect")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", labelWidth)
-      .attr("height", height + paddingBottom);
 
     const dataG = g
       .append("g")
@@ -176,7 +169,7 @@ const DotPlot = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${y.axis === "right" ? marginLeft + width : labelWidth},0)`,
+        `translate(${y.axis === "right" ? marginLeft + width : marginLeft},0)`,
       );
 
     yAxisG.call(yAxis);
@@ -200,7 +193,7 @@ const DotPlot = ({
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       )
       .call(xAxis);
 
@@ -225,7 +218,7 @@ const DotPlot = ({
 
       function zoomed(event) {
         xFn.range(
-          [labelWidth, width - paddingRight].map(d =>
+          [marginLeft, width - paddingRight].map(d =>
             event.transform.applyX(d),
           ),
         );
@@ -243,14 +236,39 @@ const DotPlot = ({
     };
   }, [data]);
 
-  return (
-    <svg
-      id={id}
-      className={`${className || ""}`}
-      width={width + marginLeft + marginRight}
-      height={height + marginTop + marginBottom}
-    />
-  );
+  return <svg id={id} className={`chart h-64 ${className || ""}`} />;
+};
+
+DotPlot.propTypes = {
+  id: PropTypes.string,
+  className: PropTypes.string,
+  height: PropTypes.number,
+  data: PropTypes.array,
+  classNameData: PropTypes.string,
+  y: PropTypes.object,
+  x: PropTypes.object,
+  marginTop: PropTypes.number,
+  marginBottom: PropTypes.number,
+  marginLeft: PropTypes.number,
+  marginRight: PropTypes.number,
+  paddingTop: PropTypes.number,
+  paddingLeft: PropTypes.number,
+  paddingRight: PropTypes.number,
+  paddingBottom: PropTypes.number,
+  width: PropTypes.number,
+  shape: PropTypes.oneOf([
+    "none",
+    "circle",
+    "square",
+    "star",
+    "triangle",
+    "wye",
+    "cross",
+    "diamond",
+  ]),
+
+  tooltip: PropTypes.object,
+  zooming: PropTypes.object,
 };
 
 export default DotPlot;

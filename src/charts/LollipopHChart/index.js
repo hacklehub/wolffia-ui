@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import "../../styles.css";
 
 import { select, selectAll, pointer } from "d3-selection";
 import { max, min } from "d3-array";
@@ -17,6 +18,7 @@ import {
 } from "d3-shape";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
+import { mergeTailwindClasses } from "../../utils";
 
 const LollipopHChart = ({
   data = [],
@@ -25,27 +27,29 @@ const LollipopHChart = ({
   classNamePoints,
   classNameLines,
   classNameSymbols,
-  width = 300,
-  height = 200,
-  marginLeft = 40,
+  marginLeft = 80,
   marginRight = 40,
   marginTop = 40,
   marginBottom = 40,
   paddingLeft = 10,
   paddingRight = 0,
-  paddingBottom = 50,
+  paddingBottom = 20,
   paddingTop = 0,
   tooltip = {},
-  labelWidth = 100,
   shape = "circle",
   x = { axis: "bottom", axisTicks: 5 },
   y = { axis: "left" },
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
+
     // Clear svg
 
     svg.selectAll("*").remove();
+
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     data.sort((a, b) => b[x.key] - a[x.key]);
 
     const shapeMapping = {
@@ -63,12 +67,12 @@ const LollipopHChart = ({
         Number.isFinite(x.start) ? x.start : min(data, d => d[x.key]),
         Number.isFinite(x.end) ? x.end : max(data, d => d[x.key]),
       ])
-      .range([labelWidth + paddingLeft, paddingLeft + width]);
+      .range([marginLeft + paddingLeft, width - paddingRight - marginRight]);
 
     const yFn = scalePoint()
       .domain(data.map(d => d[y.key]))
       // .range([height + marginTop - paddingBottom, marginTop + paddingTop])
-      .range([marginTop + paddingTop, marginTop + height - paddingBottom]);
+      .range([marginTop + paddingTop, height - marginBottom - paddingBottom]);
 
     const g = svg.append("g");
 
@@ -82,7 +86,7 @@ const LollipopHChart = ({
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       )
       .call(xAxis);
 
@@ -93,14 +97,14 @@ const LollipopHChart = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${y.axis === "right" ? marginLeft + width : labelWidth},0)`,
+        `translate(${y.axis === "right" ? marginLeft + width : marginLeft},0)`,
       );
 
     paddingLeft &&
       xAxisG
         .append("line")
-        .attr("x1", labelWidth)
-        .attr("x2", labelWidth + paddingLeft)
+        .attr("x1", marginLeft)
+        .attr("x2", marginLeft + paddingLeft)
         .attr("y1", 0)
         .attr("y2", 0)
         .attr("stroke", "currentColor");
@@ -148,9 +152,9 @@ const LollipopHChart = ({
             classNameLines || ""
           }`,
         )
-        .attr("x1", labelWidth + paddingLeft)
+        .attr("x1", marginLeft + paddingLeft)
         .attr("y1", d => yFn(d[y.key]))
-        .attr("x2", labelWidth)
+        .attr("x2", marginLeft)
         .attr("y2", d => yFn(d[y.key]))
         .transition()
         .duration(1000)
@@ -167,7 +171,7 @@ const LollipopHChart = ({
         .attr("d", d => symbol(shapeMapping[shape], 100)())
         .attr(
           "transform",
-          d => `translate(${labelWidth + paddingLeft},${yFn(d[y.key])})`,
+          d => `translate(${marginLeft + paddingLeft},${yFn(d[y.key])})`,
         )
         .transition()
         .duration(1000)
@@ -193,13 +197,11 @@ const LollipopHChart = ({
       selectAll(".tooltip").remove();
     };
   }, [data]);
-
   return (
     <svg
       id={id}
-      className={`${className}`}
-      width={width + marginLeft + marginRight}
-      height={height + marginTop + marginBottom}></svg>
+      className={mergeTailwindClasses(`chart h-64`, className || "")}
+    />
   );
 };
 

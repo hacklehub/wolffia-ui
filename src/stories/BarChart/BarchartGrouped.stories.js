@@ -7,7 +7,7 @@ const data = [
 import BarChartGrouped from "../../charts/BarChartGrouped";
 
 export default {
-  title: "Bar Chart/Grouped",
+  title: "Bar Charts/Grouped",
   component: BarChartGrouped,
   parameters: { controls: { sort: "requiredFirst" } },
   argTypes: {
@@ -28,6 +28,8 @@ export default {
         className: "text-purple-300",
       },
       { key: "Europe", className: "text-purple-500 " },
+      { key: "APAC", className: "text-purple-700 " },
+      { key: "Africa", className: "text-purple-800 " },
     ],
   },
 };
@@ -64,6 +66,7 @@ Left.storyName = "Reversing direction";
 Left.args = {
   direction: "left",
   id: "simple-left-bar-chart",
+  marginRight: 60,
 };
 
 export const Drawing = Template.bind({});
@@ -73,3 +76,20 @@ Drawing.args = {
   drawing: { duration: 1000 },
   id: "simple-drawing-bar-chart",
 };
+/*
+export const AxisTop = Template.bind();
+AxisTop.storyName = "Axis on top";
+
+AxisTop.args = {
+  id: "grouped-axis-top",
+  x: [
+    {
+      key: "USA",
+      className: "text-purple-300",
+    },
+    { key: "Europe", className: "text-purple-500 " },
+    { key: "APAC", className: "text-purple-700 " },
+    { key: "Africa", className: "text-purple-800 " },
+  ],
+};
+*/

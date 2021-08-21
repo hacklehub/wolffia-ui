@@ -6,20 +6,19 @@ import { max, min, sum } from "d3-array";
 import { scaleLinear, scalePoint, scaleBand } from "d3-scale";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
+import { mergeTailwindClasses } from "../../utils";
 
 const SpineChart = ({
   data = [],
   id,
   className,
-  width = 400,
-  height = 180,
   paddingBar = 0.3,
   paddingLeft = 0,
   paddingRight = 0,
   paddingBottom = 0,
   paddingTop = 0,
   marginLeft = 40,
-  marginRight = 40,
+  marginRight = 20,
   marginTop = 40,
   marginBottom = 40,
   y,
@@ -29,40 +28,39 @@ const SpineChart = ({
     const svg = select(`#${id}`);
     svg.selectAll("*").remove();
 
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     const g = svg.append("g");
 
     const leftSeries = x.filter(column => column.direction === "left"),
       rightSeries = x.filter(column => column.direction !== "left");
-
-    // console.log(leftSeries, rightSeries);
 
     const extreme = max([
       max(data.map(row => sum(leftSeries.map(column => row[column.key])))),
       max(data.map(row => sum(rightSeries.map(column => row[column.key])))),
     ]);
 
-    // console.log(extreme);
+    const halfWidth =
+      (width - paddingLeft - marginLeft - paddingRight - marginRight) / 2;
 
     const xRightFn = scaleLinear()
       .domain([0, extreme])
-      .range([
-        paddingLeft + marginLeft + width / 2,
-        paddingLeft + marginLeft + width + paddingRight,
-      ]);
+      .range([paddingLeft + marginLeft + halfWidth, width]);
 
     const xLeftFn = scaleLinear()
       .domain([0, extreme])
-      .range([paddingLeft + marginLeft + width / 2, paddingLeft + marginLeft]);
+      .range([paddingLeft + marginLeft + halfWidth, paddingLeft + marginLeft]);
 
     const xLeftAxis =
       x.axis === "top"
-        ? axisTop(xLeftFn).ticks(x.axisTicks || 5)
-        : axisBottom(xLeftFn).ticks(x.axisTicks || 5);
+        ? axisTop(xLeftFn).ticks(x.axisTicks || 3)
+        : axisBottom(xLeftFn).ticks(x.axisTicks || 3);
 
     const xRightAxis =
       x.axis === "top"
-        ? axisTop(xRightFn).ticks(x.axisTicks || 5)
-        : axisBottom(xRightFn).ticks(x.axisTicks || 5);
+        ? axisTop(xRightFn).ticks(x.axisTicks || 3)
+        : axisBottom(xRightFn).ticks(x.axisTicks || 3);
 
     const xRightAxisG = g.append("g").attr("class", "right-axis--x axis ");
 
@@ -70,12 +68,12 @@ const SpineChart = ({
       .attr("x1", xLeftFn(0))
       .attr("x2", xLeftFn(0))
       .attr("y1", marginTop)
-      .attr("y2", height + marginTop)
+      .attr("y2", height - marginBottom)
       .attr("class", "stroke-current stroke-1");
 
     const yFn = scaleBand()
       .domain(data.map(d => d[y.key]))
-      .range([marginTop + paddingTop, marginTop + height - paddingBottom])
+      .range([marginTop + paddingTop, height - paddingBottom - marginBottom])
       .padding(paddingBar);
 
     leftSeries.map((column, i) => {
@@ -100,7 +98,6 @@ const SpineChart = ({
     rightSeries.map((column, i) => {
       const barsG = g.append("g");
       const columns = rightSeries.filter((_, idx) => idx >= i).map(c => c.key);
-      console.log(columns);
 
       const bars = barsG
         .selectAll("g")
@@ -125,7 +122,7 @@ const SpineChart = ({
     xRightAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       )
       .call(xRightAxis);
 
@@ -134,7 +131,7 @@ const SpineChart = ({
     xLeftAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       )
       .call(xLeftAxis);
 
@@ -160,9 +157,7 @@ const SpineChart = ({
   return (
     <svg
       id={id}
-      className={`${className}`}
-      width={width + marginLeft + marginRight + paddingLeft + paddingRight}
-      height={height + marginTop + marginBottom}
+      className={mergeTailwindClasses(`class h-64`, className || "")}
     />
   );
 };

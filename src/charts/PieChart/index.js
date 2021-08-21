@@ -5,13 +5,15 @@ import { max, min, sum } from "d3-array";
 import { pie, arc } from "d3-shape";
 
 import { interpolate } from "d3-interpolate";
+import { mergeTailwindClasses } from "../../utils";
+
 const PieChart = ({
   data,
   id,
   className = "",
   classNamePoints = { key, classMap },
-  width = 300,
-  height = 200,
+  // width = 300,
+  // height = 200,
   paddingBar = 0.3,
   paddingLeft = 0,
   paddingRight = 0,
@@ -32,13 +34,21 @@ const PieChart = ({
     const svg = select(`#${id}`);
     svg.selectAll("*").remove();
 
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     const g = svg.append("g");
 
     const pieFn = pie()
       .sort(null)
       .value(d => d[value]);
 
-    const radius = min([width / 2, height / 2]);
+    const chartArea = [
+      width - marginLeft - marginRight,
+      height - marginTop - marginBottom,
+    ];
+
+    const radius = min(chartArea.map(a => a / 2));
 
     const arcFn = arc()
       .innerRadius(radius * innerRadius)
@@ -57,8 +67,8 @@ const PieChart = ({
       .append("g")
       .attr(
         "transform",
-        `translate(${paddingLeft + marginLeft + width / 2},${
-          marginTop + paddingTop + height / 2
+        `translate(${paddingLeft + marginLeft + chartArea[0] / 2},${
+          marginTop + paddingTop + chartArea[1] / 2
         })`,
       );
 
@@ -142,9 +152,7 @@ const PieChart = ({
   return (
     <svg
       id={id}
-      className={`${className}`}
-      width={width + marginLeft + marginRight + paddingLeft + paddingRight}
-      height={height + marginTop + marginBottom}
+      className={mergeTailwindClasses(`widget md:w-3/12 h-64`, className || "")}
     />
   );
 };

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+
+import "../../styles.css";
 import PropTypes from "prop-types";
 
 import { select, selectAll, pointer } from "d3-selection";
@@ -7,22 +9,22 @@ import { scaleLinear, scalePoint, scaleBand } from "d3-scale";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
+import { mergeTailwindClasses } from "../../utils";
+
 const BarChartGrouped = ({
   data = [],
   id,
   className,
   direction = "right",
-  width = 300,
-  height = 200,
   paddingLeft = 0,
   paddingRight = 0,
   paddingBottom = 0,
-  paddingBar = 0.3,
+  paddingBar = 0.2,
   paddingTop = 0,
   marginLeft = 60,
-  marginRight = 40,
-  marginTop = 40,
-  marginBottom = 40,
+  marginRight = direction === "right" ? 20 : 40,
+  marginTop = x && x.axis === "top" ? 40 : 20,
+  marginBottom = x && x.axis === "top" ? 20 : 40,
   referenceLines = [],
   x,
   y,
@@ -34,6 +36,9 @@ const BarChartGrouped = ({
     const svg = select(`#${id}`);
     svg.selectAll("*").remove();
 
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     const minStart = min(x.map(column => column.start)),
       minX = min(x.map(column => min(data, d => d[column.key]))),
       maxX = max(x.map(column => max(data, d => d[column.key]))),
@@ -42,8 +47,8 @@ const BarChartGrouped = ({
 
     const xFnRange =
       direction === "left"
-        ? [width, marginLeft + paddingLeft]
-        : [marginLeft, width - paddingRight];
+        ? [width - marginRight - paddingRight, marginLeft + paddingLeft]
+        : [marginLeft + paddingLeft, width - marginRight - paddingRight];
 
     const xFn = scaleLinear()
       .domain([
@@ -54,7 +59,7 @@ const BarChartGrouped = ({
 
     const yFn = scaleBand()
       .domain(data.map(d => d[y.key]))
-      .range([marginTop + paddingTop, marginTop + height - paddingBottom])
+      .range([marginTop + paddingTop, height - marginBottom - paddingBottom])
       .padding(paddingBar);
 
     const g = svg.append("g");
@@ -72,7 +77,9 @@ const BarChartGrouped = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${direction === "left" ? width : marginLeft},0)`,
+        `translate(${
+          direction === "left" ? width - marginRight : marginLeft
+        },0)`,
       );
 
     x.map((column, i) => {
@@ -186,7 +193,9 @@ const BarChartGrouped = ({
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${
+          x.axis === "top" ? marginTop : height - marginBottom - paddingBottom
+        })`,
       )
       .call(xAxis);
     yAxisG.call(yAxis);
@@ -194,17 +203,17 @@ const BarChartGrouped = ({
 
   useEffect(() => {
     refreshChart();
+    const resize = window.addEventListener("resize", refreshChart());
     return () => {
       selectAll(".tooltip").remove();
+      window.removeEventListener("resize", resize);
     };
   }, [data]);
 
   return (
     <svg
       id={id}
-      className={`${className || ""}`}
-      width={width + marginLeft + marginRight + paddingLeft + paddingRight}
-      height={height + marginTop + marginBottom}
+      className={mergeTailwindClasses(`chart h-80 `, className || "")}
     />
   );
 };
@@ -214,8 +223,6 @@ BarChartGrouped.propTypes = {
   id: PropTypes.string.isRequired,
   className: PropTypes.string,
   direction: PropTypes.string,
-  width: PropTypes.number,
-  height: PropTypes.number,
   paddingLeft: PropTypes.number,
   paddingRight: PropTypes.number,
   paddingBottom: PropTypes.number,

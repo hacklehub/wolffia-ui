@@ -1,3 +1,4 @@
+import "./styles.css";
 import BarChartGrouped from "./charts/BarChartGrouped";
 import BarChartStacked from "./charts/BarChartStacked";
 import BulletChart from "./charts/BulletChart";

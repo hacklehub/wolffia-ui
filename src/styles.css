@@ -1,3 +1,11 @@
 .bg-primary-dark {
   background-color: var(--primary-dark);
 }
+
+.chart {
+  @apply w-full md:w-6/12;
+}
+
+.widget {
+  @apply w-full md:w-6/12 lg:w-3/12;
+}

@@ -4,6 +4,7 @@ import { scaleLinear } from "d3-scale";
 import { axisBottom } from "d3-axis";
 import { select, selectAll, pointer } from "d3-selection";
 
+import { mergeTailwindClasses } from "../../utils";
 const BulletChart = ({
   id,
   className,
@@ -19,21 +20,22 @@ const BulletChart = ({
   classNameThreshold = `text-gray-300`,
   max,
   classNameMax = `text-gray-200`,
-  width = 450,
-  labelWidth = 150,
+  marginLeft = 120,
   axisHeight = 20,
   height = 50,
   paddingTop = 10,
-  paddingRight = 10,
+  paddingRight = 20,
 }) => {
   const refreshChart = async () => {
     const svg = select(`#${id}`);
 
     svg.selectAll("*").remove();
 
+    const width = +svg.style("width").split("px")[0];
+
     const xFn = scaleLinear()
       .domain([min, max])
-      .range([0, width - labelWidth - paddingRight]);
+      .range([0, width - marginLeft - paddingRight]);
 
     const g = svg.append("g");
 
@@ -42,12 +44,12 @@ const BulletChart = ({
       .attr("class", `stroke-current ${className}`)
       .attr("text-anchor", "end")
       .attr("font-size", "0.8em")
-      .attr("x", labelWidth - 10)
+      .attr("x", marginLeft - 10)
       .attr("y", height - axisHeight - 5);
 
     const bulletG = g
       .append("g")
-      .attr("transform", `translate(${labelWidth}, 0)`);
+      .attr("transform", `translate(${marginLeft}, 0)`);
 
     bulletG
       .append("rect")
@@ -97,7 +99,7 @@ const BulletChart = ({
     const xAxis = axisBottom(xFn).ticks(5);
 
     xAxisG
-      .attr("transform", `translate(${labelWidth}, ${height - axisHeight})`)
+      .attr("transform", `translate(${marginLeft}, ${height - axisHeight})`)
       .call(xAxis);
   };
 
@@ -117,14 +119,7 @@ const BulletChart = ({
     classNameThreshold,
   ]);
 
-  return (
-    <svg
-      id={id}
-      className={`${className || ""}`}
-      width={width}
-      height={height}
-    />
-  );
+  return <svg id={id} className={`chart h-12 ${className || ""}`} />;
 };
 
 export default BulletChart;

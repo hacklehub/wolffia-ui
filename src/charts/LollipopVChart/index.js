@@ -17,6 +17,7 @@ import {
 } from "d3-shape";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
+import { mergeTailwindClasses } from "../../utils";
 
 const LollipopVChart = ({
   data = [],
@@ -27,8 +28,8 @@ const LollipopVChart = ({
   classNamePoints,
   classNameLines,
   classNameSymbols,
-  width = 240,
-  height = 200,
+  //width = 240,
+  // height = 200,
   marginLeft = 40,
   marginRight = 40,
   marginTop = 40,
@@ -37,7 +38,6 @@ const LollipopVChart = ({
   paddingRight = 0,
   paddingBottom = 0,
   paddingTop = 0,
-
   shape = "circle",
   x = { axis: "bottom", axisTicks: 5 },
   y = { axis: "left" },
@@ -47,6 +47,10 @@ const LollipopVChart = ({
     // Clear svg
 
     svg.selectAll("*").remove();
+
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     data.sort((a, b) => b[y.key] - a[y.key]);
 
     const shapeMapping = {
@@ -59,8 +63,8 @@ const LollipopVChart = ({
       wye: symbolWye,
     };
 
-    const minValue = Number.isFinite(valueMin)
-        ? valueMin
+    const minValue = Number.isFinite(y.start)
+        ? y.start
         : min(data, d => d[y.key]),
       maxValue = Number.isFinite(valueMax)
         ? valueMax
@@ -68,11 +72,10 @@ const LollipopVChart = ({
 
     const xFn = scaleBand()
       .domain(data.map(d => d[x.key]))
-      .range([marginLeft + paddingLeft, paddingLeft + marginLeft + width]);
+      .range([marginLeft + paddingLeft, width - marginRight - paddingRight]);
     const yFn = scaleLinear()
       .domain([minValue, maxValue])
-      // .range([height + marginTop - paddingBottom, marginTop + paddingTop])
-      .range([marginTop + height, marginTop + paddingTop]);
+      .range([height - marginBottom - paddingBottom, marginTop + paddingTop]);
 
     const g = svg.append("g");
 
@@ -83,7 +86,7 @@ const LollipopVChart = ({
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       )
       .transition()
       .duration(1000)
@@ -183,9 +186,10 @@ const LollipopVChart = ({
   return (
     <svg
       id={id}
-      className={`${className}`}
-      width={width + marginLeft + marginRight}
-      height={height + marginTop + marginBottom}></svg>
+      className={mergeTailwindClasses(`chart h-48`, className || "")}
+      //width={width + marginLeft + marginRight}
+      //height={height + marginTop + marginBottom}
+    />
   );
 };
 
