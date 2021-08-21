@@ -10,7 +10,7 @@ const PieChart = ({
   id,
   className = "",
   classNamePoints = { key, classMap },
-  width = 400,
+  width = 300,
   height = 200,
   paddingBar = 0.3,
   paddingLeft = 0,
@@ -25,6 +25,7 @@ const PieChart = ({
   label,
   value,
   drawing,
+  tooltip,
   labels,
 }) => {
   const refreshChart = () => {
@@ -40,9 +41,13 @@ const PieChart = ({
     const radius = min([width / 2, height / 2]);
 
     const arcFn = arc()
-        .innerRadius(radius * innerRadius)
-        .outerRadius(radius),
-      labelsArcFn = arc()
+      .innerRadius(radius * innerRadius)
+      .outerRadius(radius);
+
+    const labelArc =
+      labels &&
+      labels.radius &&
+      arc()
         .innerRadius(radius * labels.radius)
         .outerRadius(radius * labels.radius);
 
@@ -55,7 +60,20 @@ const PieChart = ({
         `translate(${paddingLeft + marginLeft + width / 2},${
           marginTop + paddingTop + height / 2
         })`,
+      );
+
+    const paths = pathsG
+      .selectAll("path")
+      .data(arcs)
+      .join("path")
+      .attr(
+        "class",
+        d =>
+          `${
+            classNamePoints.classMap[d.data.name]
+          } fill-current stroke-current`,
       )
+      .attr("d", arcFn)
       .on("mouseenter", function (event, d) {
         if (tooltip) {
           tooltipDiv.style("opacity", 1);
@@ -66,7 +84,7 @@ const PieChart = ({
               ? tooltip.html(d)
               : tooltip.keys
               ? tooltip.keys.map(key => `${key}: ${d[key] || ""}`).join("<br/>")
-              : `${d.data[label]} = ${d.data[value]} `,
+              : `${d.data.name} = ${d.data[value]} `,
           );
         }
       })
@@ -82,18 +100,6 @@ const PieChart = ({
             .style("top", `0px`);
       });
 
-    const paths = pathsG
-      .selectAll("path")
-      .data(arcs)
-      .join("path")
-      .attr(
-        "class",
-        d =>
-          `${
-            classNamePoints.classMap[d.data[label]]
-          } fill-current stroke-current`,
-      )
-      .attr("d", arcFn);
     drawing &&
       drawing.duration &&
       paths
@@ -103,6 +109,20 @@ const PieChart = ({
           const i = interpolate({ startAngle: 0, endAngle: 0 }, d);
           return t => arcFn(i(t));
         });
+
+    labelArc &&
+      pathsG
+        .selectAll("g")
+        .data(arcs)
+        .join("text")
+        .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+        .attr(
+          "class",
+          `${(labels && labels.className) || ``} ${
+            (labels.labelsMap && labels.labelMap[labels.key]) || ``
+          } fill-current`,
+        )
+        .text(d => (labels.text ? labels.text(d.data) : d.data[label]));
 
     const tooltipDiv = select("#root")
       .append("div")

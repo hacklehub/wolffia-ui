@@ -8,7 +8,7 @@ import { scaleLinear, scalePoint, scaleBand } from "d3-scale";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
-const BarChartGrouped = ({
+const BarChartStacked = ({
   data = [],
   id,
   className,
@@ -25,6 +25,7 @@ const BarChartGrouped = ({
   marginTop = 40,
   marginBottom = 40,
   referenceLines = [],
+  waterfall = false,
   x,
   tickFormat,
   y,
@@ -59,7 +60,7 @@ const BarChartGrouped = ({
       const barsG = g.append("g");
 
       // Cumulative columns
-      const columns = x.filter((_, idx) => idx >= i).map(c => c.key);
+      const columns = x.filter((_, idx) => idx < i).map(c => c.key);
 
       const bars = barsG
         .selectAll("g")
@@ -67,15 +68,24 @@ const BarChartGrouped = ({
         .enter()
         .append("rect")
         .attr("class", `${column.className} fill-current`)
-        .attr("x", xFn(0))
-        .attr("y", d => yFn(d[y.key]))
-        .style("z-index", 10 - i)
-        .attr("width", d =>
-          drawing && drawing.duration
-            ? 0
-            : xFn(columns.reduce((sum, c) => sum + d[c], 0)) - xFn(0),
+        .attr("x", d => (waterfall ? xFn(sum(columns.map(c => d[c]))) : xFn(0)))
+        .attr(
+          "y",
+          (d, idx) =>
+            yFn(d[y.key]) + (waterfall ? (yFn.bandwidth() / x.length) * i : 0),
         )
-        .attr("height", yFn.bandwidth())
+        .style("z-index", 10 - i)
+        .attr("width", d => {
+          return drawing && drawing.duration
+            ? 0
+            : waterfall
+            ? xFn(d[column.key]) - xFn(0)
+            : xFn(sum(columns.map(c => d[c]))) - xFn(0);
+        })
+        .attr(
+          "height",
+          waterfall ? yFn.bandwidth() / x.length : yFn.bandwidth(),
+        )
         .on("mouseenter", function (event, d) {
           if (tooltip) {
             tooltipDiv.style("opacity", 1);
@@ -114,7 +124,9 @@ const BarChartGrouped = ({
           .delay((d, idx) => i * (drawing.delay || 100) + idx * 100)
           .attr("width", d => {
             const columns = x.filter((_, idx) => idx >= i).map(c => c.key);
-            return xFn(columns.reduce((sum, c) => sum + d[c], 0)) - xFn(0);
+            return waterfall
+              ? xFn(d[column.key]) - xFn(0)
+              : xFn(sum(columns.map(c => d[c]))) - xFn(0);
           });
 
       dataLabel &&
@@ -190,4 +202,4 @@ const BarChartGrouped = ({
   );
 };
 
-export default BarChartGrouped;
+export default BarChartStacked;

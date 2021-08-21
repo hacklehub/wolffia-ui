@@ -11,16 +11,15 @@ const BarChartGrouped = ({
   data = [],
   id,
   className,
-  type = "group",
   direction = "right",
-  width = 490,
+  width = 300,
   height = 200,
   paddingLeft = 0,
   paddingRight = 0,
   paddingBottom = 0,
   paddingBar = 0.3,
   paddingTop = 0,
-  marginLeft = 40,
+  marginLeft = 60,
   marginRight = 40,
   marginTop = 40,
   marginBottom = 40,
@@ -73,7 +72,7 @@ const BarChartGrouped = ({
       .attr("class", "yAxis axis")
       .attr(
         "transform",
-        `translate(${direction === "left" ? width : marginWidth},0)`,
+        `translate(${direction === "left" ? width : marginLeft},0)`,
       );
 
     x.map((column, i) => {
@@ -203,11 +202,39 @@ const BarChartGrouped = ({
   return (
     <svg
       id={id}
-      className={`${className}`}
+      className={`${className || ""}`}
       width={width + marginLeft + marginRight + paddingLeft + paddingRight}
       height={height + marginTop + marginBottom}
     />
   );
+};
+
+BarChartGrouped.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.object),
+  id: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  direction: PropTypes.string,
+  width: PropTypes.number,
+  height: PropTypes.number,
+  paddingLeft: PropTypes.number,
+  paddingRight: PropTypes.number,
+  paddingBottom: PropTypes.number,
+  paddingBar: PropTypes.number,
+  paddingTop: PropTypes.number,
+  marginLeft: PropTypes.number,
+  marginRight: PropTypes.number,
+  marginTop: PropTypes.number,
+  marginBottom: PropTypes.number,
+  referenceLines: PropTypes.arrayOf(PropTypes.object),
+  x: PropTypes.arrayOf(PropTypes.object).isRequired,
+  y: PropTypes.object.isRequired,
+  tooltip: PropTypes.shape({
+    html: PropTypes.func,
+    className: PropTypes.string,
+    keys: PropTypes.arrayOf(PropTypes.string),
+  }),
+  drawing: PropTypes.object,
+  dataLabel: PropTypes.bool,
 };
 
 export default BarChartGrouped;

@@ -88,13 +88,14 @@ const SpineChart = ({
         .enter()
         .append("rect")
         .attr("class", `${column.className} fill-current`)
-        .attr("x", d => xLeftFn(columns.reduce((sum, c) => sum + d[c], 0)))
         .attr("y", d => yFn(d[y.key]))
-        .attr(
-          "width",
-          d => xLeftFn(0) - xLeftFn(columns.reduce((sum, c) => sum + d[c], 0)),
-        )
-        .attr("height", yFn.bandwidth());
+        .attr("x", xLeftFn(0))
+        .attr("width", 0)
+        .attr("height", yFn.bandwidth())
+        .transition()
+        .duration(1000)
+        .attr("x", d => xLeftFn(sum(columns.map(c => d[c]))))
+        .attr("width", d => xLeftFn(0) - xLeftFn(sum(columns.map(c => d[c]))));
     });
     rightSeries.map((column, i) => {
       const barsG = g.append("g");
@@ -110,8 +111,13 @@ const SpineChart = ({
         .attr("x", d => xRightFn(0))
         .attr("z-index", 100 - i)
         .attr("y", d => yFn(d[y.key]))
-        .attr("width", d => xRightFn(sum(columns.map(c => d[c]))) - xRightFn(0))
-        .attr("height", yFn.bandwidth());
+        .attr("height", yFn.bandwidth())
+        .transition()
+        .duration(1000)
+        .attr(
+          "width",
+          d => xRightFn(sum(columns.map(c => d[c]))) - xRightFn(0),
+        );
     });
 
     // Draw axis
