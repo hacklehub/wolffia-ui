@@ -15,6 +15,12 @@ const data = [
   { name: "Product C", USA: 8000, Europe: 4000, APAC: 1000 },
 ];
 
+const classMap = {
+  "Product A": "text-purple-700",
+  "Product B": "text-purple-500",
+  "Product C": "text-purple-300",
+};
+
 stories.add("Simple Pie chart", () => {
   const classMap = {
     "Product A": "text-purple-700",
@@ -30,9 +36,65 @@ stories.add("Simple Pie chart", () => {
         classNamePoints={{ classMap }}
         label="name"
         value="USA"
+        // drawing={{ duration: 1000 }}
+        // labels={{ radius: 1.4 }}
+      />
+    </>
+  );
+});
+
+stories.add("Donut Pie chart", () => {
+  return (
+    <>
+      <PieChart
+        id="simple-donut-chart"
+        className="border rounded"
+        data={data}
+        classNamePoints={{ classMap }}
+        label="name"
+        value="USA"
         innerRadius={0.7}
+        tooltip={{ className: "p-2" }}
+        // drawing={{ duration: 1000 }}
+        // labels={{ radius: 1.4 }}
+      />
+    </>
+  );
+});
+
+stories.add("Entry Animation", () => {
+  return (
+    <>
+      <PieChart
+        id="animated-donut-chart"
+        className="border rounded"
+        data={data}
+        classNamePoints={{ classMap }}
+        label="name"
+        value="USA"
+        innerRadius={0.7}
+        tooltip={{ className: "p-2" }}
         drawing={{ duration: 1000 }}
-        labels={{ radius: 1.4 }}
+        // labels={{ radius: 1.4 }}
+      />
+    </>
+  );
+});
+
+stories.add("Labels", () => {
+  return (
+    <>
+      <PieChart
+        id="animated-donut-chart-with-labels"
+        className="border rounded"
+        data={data}
+        classNamePoints={{ classMap }}
+        label="name"
+        value="USA"
+        innerRadius={0.7}
+        tooltip={{ className: "p-2" }}
+        drawing={{ duration: 1000 }}
+        labels={{ radius: 1.2, text: row => row["USA"] }}
       />
     </>
   );
