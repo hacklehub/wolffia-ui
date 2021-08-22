@@ -328,8 +328,6 @@ ScatterPlot.propTypes = {
   id: PropTypes.string.isRequired,
   data: PropTypes.arrayOf(PropTypes.object),
   // Styles
-  width: PropTypes.number,
-  height: PropTypes.number,
   marginLeft: PropTypes.number,
   marginRight: PropTypes.number,
   marginTop: PropTypes.number,

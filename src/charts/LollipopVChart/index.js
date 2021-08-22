@@ -187,8 +187,6 @@ const LollipopVChart = ({
     <svg
       id={id}
       className={mergeTailwindClasses(`chart h-48`, className || "")}
-      //width={width + marginLeft + marginRight}
-      //height={height + marginTop + marginBottom}
     />
   );
 };

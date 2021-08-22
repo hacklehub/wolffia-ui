@@ -28,13 +28,10 @@ import { DateTime } from "luxon";
 import "./styles.css";
 import { easeLinear } from "d3-ease";
 
+import { mergeTailwindClasses } from "../../utils";
+
 /**
  * Display a line chart
- *
- * @param {Object} parameters All parameters
- * @param {object[]} parameters.data Data to be passed
- * @param {string} parameters.id Id of the chart
- * @param {string} parameters.className classNames to be assigned to the LineChart svg
  *
  */
 
@@ -47,14 +44,12 @@ const LineChart = ({
   tooltip,
   drawing = {},
   zooming,
-  width = 490,
-  height = 200,
   paddingLeft = 0,
   paddingRight = 0,
   paddingBottom = 0,
   paddingTop = 0,
   marginLeft = 40,
-  marginRight = 40,
+  marginRight = 20,
   marginTop = 40,
   marginBottom = 40,
   showGuidelines = false,
@@ -115,11 +110,14 @@ const LineChart = ({
 
     svg.selectAll("*").remove();
 
+    const width = +svg.style("width").split("px")[0],
+      height = +svg.style("height").split("px")[0];
+
     const xFn =
       x.scalingFunction === "time" ? scaleTime().nice() : scaleLinear();
 
     setDefaultXDomain(xFn);
-    xFn.range([marginLeft + paddingLeft, width + marginLeft]);
+    xFn.range([marginLeft + paddingLeft, width - marginRight - paddingRight]);
 
     const xAxis =
       x.axis === "top"
@@ -143,13 +141,16 @@ const LineChart = ({
           ? max(allLeftY.map(column => column.end))
           : max([...allLeftY.map(column => max(data.map(d => d[column.key])))]),
       minTicksLeft =
-        allLeftY.length > 0 && min(allLeftY.map(column => column.ticks));
+        allLeftY.length > 0 && min(allLeftY.map(column => column.axisTicks));
+
+    const yRange =
+      x.axis === "top"
+        ? [marginTop + paddingTop, height - marginBottom - paddingBottom]
+        : [height - marginBottom - paddingBottom, marginTop + paddingTop];
 
     const yLeftFn =
       allLeftY.length > 0 &&
-      scaleLinear()
-        .domain([minLeftYs, maxLeftYs])
-        .range([height + marginTop - paddingBottom, marginTop + paddingTop]);
+      scaleLinear().domain([minLeftYs, maxLeftYs]).range(yRange);
 
     const yLeftAxis =
       allLeftY.length > 0 && axisLeft(yLeftFn).ticks(minTicksLeft || 5);
@@ -168,12 +169,13 @@ const LineChart = ({
         ]);
 
     const yRightFn =
-      allRightY.length > 0 &&
-      scaleLinear()
-        .domain([minRightYs, maxRightYs])
-        .range([height + marginTop - paddingBottom, marginTop + paddingTop]);
+        allRightY.length > 0 &&
+        scaleLinear().domain([minRightYs, maxRightYs]).range(yRange),
+      minTicksRight =
+        allRightY.length > 0 && min(allRightY.map(column => column.axisTicks));
 
-    const yRightAxis = allRightY.length > 0 && axisRight(yRightFn);
+    const yRightAxis =
+      allRightY.length > 0 && axisRight(yRightFn).ticks(minTicksRight || 5);
 
     const yLeftLabels =
       allLeftY.length > 0 &&
@@ -188,10 +190,8 @@ const LineChart = ({
     xAxisG
       .attr(
         "transform",
-        `translate(0, ${x.axis === "top" ? marginTop : height + marginTop})`,
+        `translate(0, ${x.axis === "top" ? marginTop : height - marginBottom})`,
       )
-      .transition()
-      .duration(400)
       .call(xAxis);
 
     paddingLeft &&
@@ -217,13 +217,8 @@ const LineChart = ({
         .append("text")
         .text(x.axisLabel)
         .attr("fill", "currentColor")
-        .attr(
-          "x",
-          x.axisLabelPosition === "right"
-            ? marginLeft + width + 15
-            : marginLeft + width / 2,
-        )
-        .attr("y", marginTop - 10)
+        .attr("x", width / 2)
+        .attr("y", x.axis === "top" ? -10 : 30)
         .style("font-size", "1.1em");
 
     const yLeftAxisG =
@@ -233,7 +228,7 @@ const LineChart = ({
         .attr("class", "axis axis--left-y")
         .attr("transform", `translate(${marginLeft},0)`);
 
-    yLeftAxisG.transition().duration(400).call(yLeftAxis);
+    yLeftAxisG.call(yLeftAxis);
 
     paddingBottom &&
       yLeftAxisG
@@ -249,7 +244,7 @@ const LineChart = ({
       g
         .append("g")
         .attr("class", "axis axis--right-y")
-        .attr("transform", `translate(${width + marginLeft + paddingRight},0)`);
+        .attr("transform", `translate(${width - marginRight},0)`);
 
     yRightAxisG && yRightAxisG.call(yRightAxis);
 
@@ -271,7 +266,10 @@ const LineChart = ({
         .attr("fill", "currentColor")
         .attr("text-anchor", "middle")
         .attr("x", 0)
-        .attr("y", marginTop - 15)
+        .attr(
+          "y",
+          x.axis === "top" ? height - marginBottom + 20 : marginTop - 15,
+        )
         .style("font-size", "1.1em");
 
     yRightLabels &&
@@ -282,17 +280,20 @@ const LineChart = ({
         .attr("fill", "currentColor")
         .attr("text-anchor", "middle")
         .attr("x", 0)
-        .attr("y", marginTop - 15)
+        .attr(
+          "y",
+          x.axis === "top" ? height - marginBottom + 20 : marginTop - 15,
+        )
         .style("font-size", "1.1em");
 
     const clipPath = svg
       .append("clipPath")
       .attr("id", "clip")
       .append("rect")
-      .attr("x", marginLeft - 4)
-      .attr("y", marginTop - paddingTop - 4)
-      .attr("width", width + paddingRight + 4)
-      .attr("height", height + paddingBottom + 8);
+      .attr("x", marginLeft)
+      .attr("y", marginTop - paddingTop)
+      .attr("width", width - paddingRight - marginRight - marginLeft)
+      .attr("height", height - paddingBottom - marginBottom - marginTop);
 
     const leftG = g
       .append("g")
@@ -521,7 +522,7 @@ const LineChart = ({
     function onMouseLeave(event) {
       selectAll(".axisPointLine").remove();
 
-      tooltip && tooltipDiv.style("opacity", "0");
+      tooltip && tooltipDiv.style("opacity", "0").style(("left", "-1000px"));
     }
 
     function drawHLine({
@@ -571,8 +572,8 @@ const LineChart = ({
         drawVLine({
           x: xValue(dataClosest),
           y: min([
-            (yLeftFn && yLeftFn(max(dataLeft))) || marginTop + height,
-            (yRightFn && yRightFn(max(dataRight))) || marginTop + height,
+            (yLeftFn && yLeftFn(max(dataLeft))) || height - marginBottom,
+            (yRightFn && yRightFn(max(dataRight))) || height - marginBottom,
           ]),
           className: "axisPointLine text-gray-200 stroke-current",
           dashed: true,
@@ -638,9 +639,10 @@ const LineChart = ({
 
       function zoomed(event) {
         xFn.range(
-          [marginLeft + paddingLeft, width + marginLeft].map(d =>
-            event.transform.applyX(d),
-          ),
+          [
+            marginLeft + paddingLeft,
+            width - marginRight - paddingRight,
+          ].map(d => event.transform.applyX(d)),
         );
         xAxisG.call(xAxis);
         drawLeftSeries();
@@ -661,9 +663,7 @@ const LineChart = ({
   return (
     <svg
       id={id}
-      className={`${className}`}
-      width={width + marginLeft + marginRight + paddingLeft + paddingRight}
-      height={height + marginTop + marginBottom}
+      className={mergeTailwindClasses(`chart h-64`, className || "")}
     />
   );
 };

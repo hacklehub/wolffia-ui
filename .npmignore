@@ -10,4 +10,4 @@ tests/
 
 package*/
 
-dist/stories
+storybook-static/

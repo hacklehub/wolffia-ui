@@ -1,17 +1,18 @@
 import { Meta } from "@storybook/addon-docs";
+import Layout from "../../.storybook/Layout";
 
 <Meta title="Wolffia-UI/Introduction" />
 
 # Wolffia-UI
 
-Wolffia-UI is a charting library, built with React, D3 and Tailwindcss. The aim is to make a lightweight library, which is
+Wolffia-UI is an opinionated charting library, built with React, D3 and Tailwindcss. The aim is to make a lightweight library, which is
 
 - Responsive
 - consistent and easy to style
 - Support theming (Dark theme)
 - Support interactivity
 
-To initiate Wolffia-ui in a react app:
+## To initiate Wolffia-ui in a react app:
 
 1. Start a create-react-app with <br/>
    <code>npx create-react-app your_app_name</code>
@@ -21,24 +22,28 @@ To initiate Wolffia-ui in a react app:
 4. Install wolffia-ui <br/>
    <code>npm install --save wolffia-ui </code>
 
-### FAQ
+## How to use
 
-#### 1. Why D3?
+1. Import the chart that you want.
 
-We love D3js. It's the best thing since sliced bread.
+For example:
 
-#### 2. Why tailwind?
+`import { LineChart } from "wolffia-ui";`
 
-Simply put. The flexibility tailwind gives to style DOM elements is something we love. This helps us keep the library light, and styling completely flexible.
+2. Use the chart inside the component.
 
-#### 3. Do I have to learn D3 to use wolffia-ui?
+`<LineChart id="line-chart" data={data} />`
 
-Unless you want to write your own charts, No.
+### Things to remember
 
-#### 4. Do I have to learn how to use Tailwind to use Wolffia-ui?
+1. Every chart needs a unique **id**.
 
-Well, yes. However, once you understand the working of tailwind, you'll realize that it is just a bunch of classNames. You will just need to keep referring to this page - https://tailwindcss.com/docs/utility-first
+Why?
+This is done so, so that D3 can target the correct chart in case multiple charts are there on the page.
 
-#### 5. Instead of learning tailwind, can I give my own classNames and write my CSS?
+### Storybook notes:
 
-Why, of course. In fact, if you want to write your own animations which are not there in Tailwind, you may need to write your own CSS. That may take your charts to the next level.
+If you are new to storybook, please go through the below notes.
+
+1. To toggle dark mode for tailwind, click the crescent moon icon at the tool. (Note: The icon next to it will not work, because we have to set a tailwind class "dark" at the highest level )
+2. To view multiple screen-sizes, Click the multi-screen icon at the top. Once you change orientation, refresh the chart for the new layout to take effect.

@@ -57,7 +57,7 @@ StyleChart.storyName = "Style the chart overall with Tailwindcss className's ";
 
 StyleChart.args = {
   id: "styled-bar-grouped-chart",
-  className: "border rounded bg-green-900",
+  className: "border rounded bg-green-50 dark:bg-green-900",
 };
 
 export const Left = Template.bind({});
@@ -76,20 +76,3 @@ Drawing.args = {
   drawing: { duration: 1000 },
   id: "simple-drawing-bar-chart",
 };
-/*
-export const AxisTop = Template.bind();
-AxisTop.storyName = "Axis on top";
-
-AxisTop.args = {
-  id: "grouped-axis-top",
-  x: [
-    {
-      key: "USA",
-      className: "text-purple-300",
-    },
-    { key: "Europe", className: "text-purple-500 " },
-    { key: "APAC", className: "text-purple-700 " },
-    { key: "Africa", className: "text-purple-800 " },
-  ],
-};
-*/

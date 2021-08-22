@@ -5,6 +5,10 @@
   stroke-width: 2;
 }
 
+.dashed {
+  stroke-dasharray: 5;
+}
+
 .custom-series-2 {
   stroke: blueviolet;
 }

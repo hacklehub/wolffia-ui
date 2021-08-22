@@ -12,8 +12,6 @@ const PieChart = ({
   id,
   className = "",
   classNamePoints = { key, classMap },
-  // width = 300,
-  // height = 200,
   paddingBar = 0.3,
   paddingLeft = 0,
   paddingRight = 0,
