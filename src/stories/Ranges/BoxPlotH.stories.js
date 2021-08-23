@@ -1,4 +1,4 @@
-import BoxPlot from "../../charts/BoxPlot";
+import BoxPlotH from "../../charts/BoxPlotH";
 
 const data = [
   {
@@ -51,13 +51,13 @@ const data = [
 
 export default {
   title: "Ranges/Box Plots-H",
-  component: BoxPlot,
+  component: BoxPlotH,
   args: {
     data,
   },
 };
 
-const Template = args => <BoxPlot {...args} />;
+const Template = args => <BoxPlotH {...args} />;
 
 export const Simple = Template.bind();
 Simple.storyName = "Simple Box Plot";
