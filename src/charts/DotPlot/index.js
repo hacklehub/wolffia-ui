@@ -236,7 +236,14 @@ const DotPlot = ({
     };
   }, [data]);
 
-  return <svg id={id} className={`chart h-64 ${className || ""}`} />;
+  return (
+    <svg
+      id={id}
+      className={`w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 chart  h-64 ${
+        className || ""
+      }`}
+    />
+  );
 };
 
 DotPlot.propTypes = {

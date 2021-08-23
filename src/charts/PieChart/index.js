@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-
+import PropTypes from "prop-types";
 import { select, selectAll, pointer } from "d3-selection";
 import { max, min, sum } from "d3-array";
 import { pie, arc } from "d3-shape";
@@ -155,4 +155,12 @@ const PieChart = ({
   );
 };
 
+PieChart.propTypes = {
+  id: PropTypes.string.isRequired,
+  classNamePoints: PropTypes.shape({
+    classMap: PropTypes.object,
+  }).isRequired,
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+};
 export default PieChart;

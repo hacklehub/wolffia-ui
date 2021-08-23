@@ -23,8 +23,8 @@ const BulletChart = ({
   marginLeft = 120,
   axisHeight = 20,
   height = 50,
-  paddingTop = 10,
-  paddingRight = 20,
+  marginTop = 10,
+  marginRight = 20,
 }) => {
   const refreshChart = async () => {
     const svg = select(`#${id}`);
@@ -35,7 +35,7 @@ const BulletChart = ({
 
     const xFn = scaleLinear()
       .domain([min, max])
-      .range([0, width - marginLeft - paddingRight]);
+      .range([0, width - marginLeft - marginRight]);
 
     const g = svg.append("g");
 
@@ -87,9 +87,9 @@ const BulletChart = ({
       .append("rect")
       .attr("class", `${classNameData} fill-current`)
       .attr("x", xFn(min))
-      .attr("y", paddingTop)
+      .attr("y", marginTop)
       .attr("width", 0)
-      .attr("height", height - axisHeight - paddingTop * 2)
+      .attr("height", height - axisHeight - marginTop * 2)
       .transition()
       .duration(1000)
       .attr("width", xFn(data));
@@ -119,7 +119,14 @@ const BulletChart = ({
     classNameThreshold,
   ]);
 
-  return <svg id={id} className={`chart h-12 ${className || ""}`} />;
+  return (
+    <svg
+      id={id}
+      className={`w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 chart  h-12 ${
+        className || ""
+      }`}
+    />
+  );
 };
 
 export default BulletChart;

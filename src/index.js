@@ -2,6 +2,7 @@ import "./styles.css";
 import BarChartGrouped from "./charts/BarChartGrouped";
 import BarChartStacked from "./charts/BarChartStacked";
 import BulletChart from "./charts/BulletChart";
+import LinearGauge from "./charts/LinearGauge";
 import DotPlot from "./charts/DotPlot";
 import LineChart from "./charts/LineChart/index";
 import LollipopHChart from "./charts/LollipopHChart";
@@ -21,4 +22,5 @@ export {
   BarChartGrouped,
   BarChartStacked,
   BulletChart,
+  LinearGauge,
 };

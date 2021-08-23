@@ -6,14 +6,10 @@ import { addDecorator } from "@storybook/react";
 
 import Layout from "./Layout";
 
+import "./styles.css";
+
 export const parameters = {
   layout: "fullscreen",
-  darkMode: {
-    // Override the default dark theme
-    dark: { ...themes.dark },
-    // Override the default light theme
-    light: { ...themes.normal },
-  },
 };
 
 export const globalTypes = {

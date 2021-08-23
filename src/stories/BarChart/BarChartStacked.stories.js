@@ -9,7 +9,12 @@ import BarChartStacked from "../../charts/BarChartStacked";
 export default {
   title: "Bar Charts/Stacked",
   component: BarChartStacked,
-  parameters: { controls: { sort: "requiredFirst" } },
+  parameters: {
+    controls: { sort: "requiredFirst" },
+    docs: {
+      description: "A simple stacked-bar chart",
+    },
+  },
   argTypes: {
     direction: {
       options: ["left", "right"],
@@ -28,7 +33,13 @@ const Template = args => <BarChartStacked {...args} />;
 
 export const Simple = Template.bind({});
 Simple.storyName = "Simple Stacked Bar chart";
-
+Simple.parameters = {
+  docs: {
+    description: {
+      story: "Some story **markdown**",
+    },
+  },
+};
 Simple.args = {
   id: "simple-bar-chart",
   x: [
@@ -58,7 +69,7 @@ Styled.args = {
     { key: "Africa", className: "text-purple-900" },
   ],
   y: { key: "name" },
-  className: "bg-gray-900 rounded border h-48",
+  className: "bg-gray-900 text-white rounded border h-48 lg:w-6/12",
 };
 
 export const Tooltip = Template.bind();

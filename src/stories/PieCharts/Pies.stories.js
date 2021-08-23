@@ -54,3 +54,13 @@ Drawing.args = {
   innerRadius: 0.7,
   drawing: { duration: 1000 },
 };
+
+export const Tooltip = Template.bind();
+Tooltip.storyName = "Tooltip";
+
+Tooltip.args = {
+  id: "simple-tooltip",
+  classNamePoints: { classMap },
+  label: "name",
+  value: "USA",
+};
