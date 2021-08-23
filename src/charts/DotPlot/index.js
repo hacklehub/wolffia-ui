@@ -62,12 +62,8 @@ const DotPlot = ({
 
     const xFn = scaleLinear()
       .domain([
-        Number.isFinite(x.minValue)
-          ? x.minValue
-          : min(data.map(d => d[x.minKey])),
-        Number.isFinite(x.maxValue)
-          ? x.maxValue
-          : max(data.map(d => d[x.maxKey])),
+        Number.isFinite(x.min) ? x.min : min(data.map(d => d[x.minKey])),
+        Number.isFinite(x.max) ? x.max : max(data.map(d => d[x.maxKey])),
       ])
       .range([marginLeft, width - paddingRight - marginRight]);
 

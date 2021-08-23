@@ -47,7 +47,7 @@ Simple.args = {
       key: "USA",
       className: "text-purple-300",
     },
-    { key: "Europe", className: "text-purple-500 " },
+    { key: "Europe", className: "text-purple-500" },
   ],
   y: { key: "name" },
 };
@@ -76,4 +76,14 @@ Drawing.storyName = "With entry animation";
 Drawing.args = {
   drawing: { duration: 1000 },
   id: "simple-drawing-bar-chart",
+};
+
+export const DataLabel = Template.bind({});
+DataLabel.storyName = "With Data label";
+
+DataLabel.args = {
+  id: "data-label-bar-chart",
+  dataLabel: {
+    className: "text-white",
+  },
 };

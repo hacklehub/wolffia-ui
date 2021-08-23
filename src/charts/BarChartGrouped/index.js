@@ -170,10 +170,13 @@ const BarChartGrouped = ({
           .enter()
           .append("text")
           .text(d => d[column.key])
-          .attr("class", "fill-current")
+          .attr(
+            "class",
+            mergeTailwindClasses("fill-current", dataLabel.className || ""),
+          )
           .attr("text-anchor", direction === "left" ? "start" : "end")
           .attr("x", d => xFn(d[column.key]) + (direction === "left" ? 5 : -2))
-          .attr("font-size", "0.6em")
+          .attr("font-size", "0.5em")
           .attr(
             "y",
             d =>

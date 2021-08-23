@@ -123,7 +123,6 @@ Waterfall.args = {
     { key: "Africa", className: "text-purple-900" },
   ],
   y: { key: "name" },
-  drawing: { duration: 1000 },
   waterfall: { padding: 5 },
 };
 
@@ -158,7 +157,6 @@ Proportion.args = {
     { key: "Africa", className: "text-purple-900" },
   ],
   y: { key: "name" },
-  drawing: { duration: 1000 },
   tooltip: {},
   tickFormat: "%",
 };

@@ -16,6 +16,7 @@ const LinearGauge = ({
   label,
   data = 0,
   max = 1,
+  error,
   gaugeHeight = 6,
   marginLeft = 40,
   marginRight = 40,
@@ -79,7 +80,12 @@ const LinearGauge = ({
       .attr("width", 0)
       .attr("height", gaugeHeight)
       .attr("ry", gaugeHeight / 2)
-      .on("mouseenter", function (event, d) {})
+      .on("mouseenter", function (event, d) {
+        tooltip &&
+          tooltipDiv
+            .style("opacity", 1)
+            .html(tooltip.html ? tooltip.html(data, error) : data);
+      })
       .on("mousemove", function (event, d) {
         const [bX, bY] = pointer(event, select("body"));
         tooltipDiv.style("left", `${bX + 10}px`).style("top", `${bY + 10}px`);
@@ -95,12 +101,56 @@ const LinearGauge = ({
       .duration(drawing.duration)
       .attr("width", xFn(data) - xFn(0));
 
+    const errorRect =
+      error &&
+      error.data &&
+      gaugeG
+        .append("rect")
+        .attr(
+          "class",
+          mergeTailwindClasses(
+            "data-rect fill-current stroke-current text-red-700",
+            (error && error.className) || "",
+          ),
+        )
+        .attr("x", width - marginRight)
+        .attr("y", height - marginBottom - gaugeHeight)
+        .attr("ry", gaugeHeight / 2)
+        .attr("width", 0)
+        .attr("height", gaugeHeight)
+        .on("mouseenter", function (event, d) {
+          tooltip &&
+            tooltipDiv
+              .style("opacity", 1)
+              .html(tooltip.html ? tooltip.html(data, error) : error);
+        })
+        .on("mousemove", function (event, d) {
+          const [bX, bY] = pointer(event, select("body"));
+          tooltipDiv.style("left", `${bX + 10}px`).style("top", `${bY + 10}px`);
+        })
+        .on("mouseleave", function (event, d) {
+          tooltip &&
+            tooltipDiv
+              .style("opacity", "0")
+              .style("left", `0px`)
+              .style("top", `0px`);
+        })
+        .transition()
+        .duration(drawing.duration)
+        .attr("x", d => xFn(max - error.data || 0))
+        .attr("width", d => {
+          return xFn(max) - xFn(max - (error.data || 0));
+        });
+
     const tooltipDiv = select("#root")
       .append("div")
       .attr("id", "tooltip")
       .style("position", "absolute")
       .style("opacity", "0")
-      .attr("class", `tooltip ${(tooltip && tooltip.className) || ""}`);
+      .attr(
+        "class",
+        mergeTailwindClasses("tooltip ", tooltip && tooltip.className),
+      );
   };
 
   const refreshChart = () => {

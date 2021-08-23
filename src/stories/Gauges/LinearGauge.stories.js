@@ -43,5 +43,30 @@ Tooltip.storyName = "Tooltip";
 Tooltip.args = {
   id: "tooltip-linear-gauge",
   label: "Task Completion",
-  classNameGauge: "text-",
+  tooltip: {
+    className: "ring-1",
+  },
+};
+
+export const CustomTooltip = Template.bind();
+CustomTooltip.storyName = "Customize the tooltip";
+
+CustomTooltip.args = {
+  id: "custom-tooltip",
+  label: "Task completion",
+  tooltip: {
+    html: data => `${data * 100} % done`,
+  },
+};
+
+export const ErrorGauge = Template.bind();
+ErrorGauge.storyName = "With errors";
+
+ErrorGauge.args = {
+  id: "with-error-gauge",
+  label: "Task completion",
+  error: {
+    data: 0.2,
+    className: "text-red-400 dark:text-red-700",
+  },
 };

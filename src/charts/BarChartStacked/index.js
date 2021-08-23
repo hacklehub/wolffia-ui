@@ -66,6 +66,8 @@ const BarChartStacked = ({
       .domain([0, max(data.map(d => sum(x.map(value => d[value.key]))))])
       .range(xFnRange);
 
+    x.reverse();
+
     x.map((column, i) => {
       const barsG = g.append("g");
 
@@ -78,23 +80,25 @@ const BarChartStacked = ({
         .enter()
         .append("rect")
         .attr("class", `${column.className} fill-current`)
+        .attr("z-index", 100 - i)
         .attr("x", d =>
           waterfall ? xFn(sum(afterColumns.map(c => d[c]))) : xFn(0),
         )
         .attr(
           "y",
           (d, idx) =>
-            yFn(d[y.key]) + (waterfall ? (yFn.bandwidth() / x.length) * i : 0),
+            yFn(d[y.key]) +
+            (waterfall ? (yFn.bandwidth() / x.length) * (x.length - i) : 0),
         )
         .style("z-index", 10 + i)
-        .attr("width", d => {
-          return drawing && drawing.duration
+        .attr("width", d =>
+          drawing && drawing.duration
             ? 0
             : waterfall
             ? xFn(d[column.key] || 0) - xFn(0)
             : xFn(sum(afterColumns.map(c => d[c])) + (d[column.key] || 0)) -
-              xFn(0);
-        })
+              xFn(0),
+        )
         .attr(
           "height",
           waterfall
@@ -118,7 +122,7 @@ const BarChartStacked = ({
                 : `${d[y.key]} <br/> ${column.key} ${
                     tickFormat
                       ? formatMapping[tickFormat]
-                        ? format(formatMapping[tickFormat])
+                        ? format(formatMapping[tickFormat])(d[column.key])
                         : format(tickFormat)
                       : d[column.key]
                   }`,

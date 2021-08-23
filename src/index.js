@@ -1,6 +1,7 @@
 import "./styles.css";
 import BarChartGrouped from "./charts/BarChartGrouped";
 import BarChartStacked from "./charts/BarChartStacked";
+import BoxPlot from "./charts/BoxPlotH";
 import BulletChart from "./charts/BulletChart";
 import LinearGauge from "./charts/LinearGauge";
 import DotPlot from "./charts/DotPlot";
@@ -15,6 +16,7 @@ export {
   LineChart,
   LollipopHChart,
   LollipopVChart,
+  BoxPlot,
   DotPlot,
   PieChart,
   SpineChart,
