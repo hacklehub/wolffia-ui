@@ -17,7 +17,6 @@ const BarChartStacked = ({
   id,
   className,
   direction = "right",
-  // height = 200,
   paddingBar = 0.3,
   paddingLeft = 0,
   paddingRight = 0,

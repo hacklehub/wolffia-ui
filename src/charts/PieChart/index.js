@@ -150,7 +150,10 @@ const PieChart = ({
   return (
     <svg
       id={id}
-      className={mergeTailwindClasses(`widget md:w-3/12 h-64`, className || "")}
+      className={mergeTailwindClasses(
+        `dark:bg-gray-800 text-gray-900 dark:text-gray-50 widget h-64`,
+        className || "",
+      )}
     />
   );
 };
@@ -159,8 +162,28 @@ PieChart.propTypes = {
   id: PropTypes.string.isRequired,
   classNamePoints: PropTypes.shape({
     classMap: PropTypes.object,
-  }).isRequired,
+  }),
   label: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  paddingBar: PropTypes.number,
+  paddingLeft: PropTypes.number,
+  paddingRight: PropTypes.number,
+  paddingBottom: PropTypes.number,
+  paddingTop: PropTypes.number,
+  marginLeft: PropTypes.number,
+  marginRight: PropTypes.number,
+  marginTop: PropTypes.number,
+  marginBottom: PropTypes.number,
+  innerRadius: PropTypes.number,
+  drawing: PropTypes.shape({
+    duration: PropTypes.number,
+  }),
+  tooltip: PropTypes.shape({
+    html: PropTypes.func,
+  }),
+  labels: PropTypes.shape({
+    radius: PropTypes.number,
+  }),
 };
 export default PieChart;

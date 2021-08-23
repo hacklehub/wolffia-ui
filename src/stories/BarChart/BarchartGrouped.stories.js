@@ -67,6 +67,7 @@ Left.args = {
   direction: "left",
   id: "simple-left-bar-chart",
   marginRight: 60,
+  marginLeft: 20,
 };
 
 export const Drawing = Template.bind({});

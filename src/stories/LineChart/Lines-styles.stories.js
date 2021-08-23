@@ -94,7 +94,7 @@ TwoAxes.args = {
       axis: "right",
     },
   ],
-  className: "",
+  marginRight: 40,
 };
 
 export const Drawing = Template.bind();

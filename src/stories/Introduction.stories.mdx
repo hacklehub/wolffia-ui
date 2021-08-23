@@ -41,6 +41,12 @@ For example:
 Why?
 This is done so, so that D3 can target the correct chart in case multiple charts are there on the page.
 
+2. margin{Left/Right/Bottom/Top} and padding{Left/Right/Bottom/Top} props of charts refer to the chart area (not the entire svg). The svg can be styled using the className prop of the chart.
+
+3. Normal text color is black and dark mode text is white. Normal background is white, while dark mode background color is bg-gray-900 https://tailwindcss.com/docs/customizing-colors. Customize this globally across your app by targeting `.chart` class.
+
+4. Individual components of a chart can be given classes by className{componentName} prop. Refer to that chart's documentation of how to target that component.
+
 ### Storybook notes:
 
 If you are new to storybook, please go through the below notes.

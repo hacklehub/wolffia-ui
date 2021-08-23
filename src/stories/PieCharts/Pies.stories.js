@@ -15,6 +15,9 @@ const classMap = {
 export default {
   title: "Pie Charts/Pie",
   component: PieChart,
+  parameters: {
+    controls: { sort: "requiredFirst" },
+  },
   args: {
     data,
   },
@@ -63,4 +66,5 @@ Tooltip.args = {
   classNamePoints: { classMap },
   label: "name",
   value: "USA",
+  tooltip: {},
 };

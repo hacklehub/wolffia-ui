@@ -20,7 +20,7 @@ const LinearGauge = ({
   marginLeft = 40,
   marginRight = 40,
   marginTop = 30,
-  marginBottom = 4,
+  marginBottom = 10,
   drawing = { duration: 1000 },
   tooltip,
   classNameGauge = "",
