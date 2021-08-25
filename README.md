@@ -75,3 +75,9 @@ The purposes of both are different. The first one is for UI development, the sec
 Please click both on "Canvas" mode to see actual dark mode.
 
 2. To view multiple screen-sizes, Click the multi-screen icon at the top. Once you change orientation, refresh the chart for the new layout to take effect.
+
+
+Our Inspirations
+
+1. https://observablehq.com/@d3/gallery 
+2. https://app.rawgraphs.io

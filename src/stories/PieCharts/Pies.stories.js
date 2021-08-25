@@ -31,7 +31,7 @@ Simple.storyName = "Simple pie chart";
 Simple.args = {
   id: "simple-pie-chart",
   classNamePoints: { classMap },
-  label: "name",
+  labels: { key: "name" },
   value: "USA",
 };
 
@@ -41,7 +41,7 @@ Donut.storyName = "Simple Donut";
 Donut.args = {
   id: "simple-donut-chart",
   classNamePoints: { classMap },
-  label: "name",
+  labels: { key: "name" },
   value: "USA",
   innerRadius: 0.7,
 };
@@ -52,7 +52,7 @@ Drawing.storyName = "Donut with entry animation";
 Drawing.args = {
   id: "simple-donut-chart-animated",
   classNamePoints: { classMap },
-  label: "name",
+  labels: { key: "name" },
   value: "USA",
   innerRadius: 0.7,
   drawing: { duration: 1000 },
@@ -64,7 +64,19 @@ Tooltip.storyName = "Tooltip";
 Tooltip.args = {
   id: "simple-tooltip",
   classNamePoints: { classMap },
-  label: "name",
+  labels: { key: "name" },
   value: "USA",
   tooltip: {},
+};
+
+export const Labels = Template.bind();
+Labels.storyName = "Labels around the chart";
+
+Labels.args = {
+  id: "labels-around-chart",
+  className: "md:w-6/12",
+  classNamePoints: { classMap },
+  innerRadius: 0.7,
+  labels: { key: "name", radius: 0.9, className: "text-xs" },
+  value: "USA",
 };

@@ -22,7 +22,6 @@ const PieChart = ({
   marginTop = 40,
   marginBottom = 40,
   innerRadius = 0,
-  label,
   value,
   drawing,
   tooltip,
@@ -53,8 +52,7 @@ const PieChart = ({
       .outerRadius(radius);
 
     const labelArc =
-      labels &&
-      labels.radius &&
+      labels?.radius &&
       arc()
         .innerRadius(radius * labels.radius)
         .outerRadius(radius * labels.radius);
@@ -69,7 +67,6 @@ const PieChart = ({
           marginTop + paddingTop + chartArea[1] / 2
         })`,
       );
-
     const paths = pathsG
       .selectAll("path")
       .data(arcs)
@@ -118,19 +115,24 @@ const PieChart = ({
           return t => arcFn(i(t));
         });
 
+    const labelsG = labelArc && pathsG.append("g").attr("class", "labels");
+
+    console.log(labels);
     labelArc &&
-      pathsG
+      labelsG
         .selectAll("g")
         .data(arcs)
-        .join("text")
+        .enter()
+        .append("text")
         .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+        .attr("text-anchor", "middle")
         .attr(
           "class",
-          `${(labels && labels.className) || ``} ${
+          `${labels?.className || ``} ${
             (labels.labelsMap && labels.labelMap[labels.key]) || ``
           } fill-current`,
         )
-        .text(d => (labels.text ? labels.text(d.data) : d.data[label]));
+        .text(d => (labels.text ? labels.text(d.data) : d.data[labels.key]));
 
     const tooltipDiv = select("#root")
       .append("div")
@@ -151,7 +153,7 @@ const PieChart = ({
     <svg
       id={id}
       className={mergeTailwindClasses(
-        `dark:bg-gray-800 text-gray-900 dark:text-gray-50 widget h-64`,
+        `w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 chart  h-80`,
         className || "",
       )}
     />
@@ -163,7 +165,6 @@ PieChart.propTypes = {
   classNamePoints: PropTypes.shape({
     classMap: PropTypes.object,
   }),
-  label: PropTypes.string.isRequired,
   value: PropTypes.string.isRequired,
   className: PropTypes.string,
   paddingBar: PropTypes.number,
@@ -184,6 +185,6 @@ PieChart.propTypes = {
   }),
   labels: PropTypes.shape({
     radius: PropTypes.number,
-  }),
+  }).isRequired,
 };
 export default PieChart;

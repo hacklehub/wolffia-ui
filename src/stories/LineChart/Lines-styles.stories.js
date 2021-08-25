@@ -63,7 +63,8 @@ StyleChart.args = {
     { key: "value", className: "text-green-500" },
     { key: "reading", className: "text-blue-500 " },
   ],
-  className: "bg-blue-100 dark:bg-blue-900",
+  className:
+    "bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900",
 };
 
 export const PaddedChart = Template.bind();

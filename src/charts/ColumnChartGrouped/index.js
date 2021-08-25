@@ -168,4 +168,29 @@ const ColumnChartGrouped = ({
   );
 };
 
+ColumnChartGrouped.propTypes = {
+  data: PropTypes.arrayOf(PropTypes.object),
+  id: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  paddingLeft: PropTypes.number,
+  paddingRight: PropTypes.number,
+  paddingBottom: PropTypes.number,
+  paddingBar: PropTypes.number,
+  paddingTop: PropTypes.number,
+  marginLeft: PropTypes.number,
+  marginRight: PropTypes.number,
+  marginTop: PropTypes.number,
+  marginBottom: PropTypes.number,
+  referenceLines: PropTypes.arrayOf(PropTypes.object),
+  y: PropTypes.arrayOf(PropTypes.object).isRequired,
+  x: PropTypes.object.isRequired,
+  tooltip: PropTypes.shape({
+    html: PropTypes.func,
+    className: PropTypes.string,
+    keys: PropTypes.arrayOf(PropTypes.string),
+  }),
+  drawing: PropTypes.object,
+  dataLabel: PropTypes.bool,
+};
+
 export default ColumnChartGrouped;
