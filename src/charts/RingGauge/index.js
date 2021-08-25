@@ -166,9 +166,10 @@ const RingGauge = ({
   return (
     <svg
       id={id}
-      className={`w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 widget h-64 ${
-        className || ""
-      }`}
+      className={mergeTailwindClasses(
+        `dark:bg-gray-800 text-gray-900 dark:text-gray-50 widget h-64`,
+        className || "",
+      )}
     />
   );
 };
