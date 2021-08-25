@@ -15,6 +15,8 @@ export default {
   component: LineChart,
   args: {
     data,
+    x: { key: "id" },
+    y: [{ key: "value" }, { key: "reading" }],
   },
 };
 
@@ -25,8 +27,6 @@ Simple.storyName = "Simple Line Chart";
 
 Simple.args = {
   id: "simple-line-chart",
-  x: { key: "id" },
-  y: [{ key: "value" }, { key: "reading" }],
 };
 
 export const Styles = Template.bind();
@@ -63,7 +63,7 @@ StyleChart.args = {
     { key: "value", className: "text-green-500" },
     { key: "reading", className: "text-blue-500 " },
   ],
-  className: "",
+  className: "bg-blue-100 dark:bg-blue-900",
 };
 
 export const PaddedChart = Template.bind();
