@@ -7,7 +7,7 @@ const data = [
 import BarChartStacked from "../../charts/BarChartStacked";
 
 export default {
-  title: "Bar Charts/Stacked",
+  title: "Bar Charts/Horizontal/Stacked",
   component: BarChartStacked,
   parameters: {
     controls: { sort: "requiredFirst" },

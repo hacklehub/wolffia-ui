@@ -16,12 +16,14 @@ import {
   symbolTriangle,
   symbolWye,
   symbolCross,
+  line,
   symbolStar,
 } from "d3-shape";
 
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 
 import { mergeTailwindClasses } from "../../utils";
+
 const ScatterPlot = ({
   data,
   id,
@@ -44,9 +46,7 @@ const ScatterPlot = ({
   onClick,
   zooming = false,
   drawing,
-  connect = {
-    classNameLine: "",
-  },
+  connect,
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
@@ -171,25 +171,17 @@ const ScatterPlot = ({
       wye: symbolWye,
     };
 
-    /*const shapeScale =
-      shape &&
-      shape.shapeMap &&
-      scaleOrdinal()
-        .domain(Object.keys(shape.shapeMap))
-        .range(Object.values(shape.shapeMap).map(shape => shapeMapping[shape]));*/
-
     // Tooltips
-    const tooltipDiv = select("body")
+    const tooltipDiv = select("#root")
       .append("div")
       .attr("id", "tooltip")
-      .style("transition-property", "opacity")
-      .style("transition-duration", "1000")
       .style("position", "absolute")
-      .attr("opacity", "0");
+      .style("opacity", "0")
+      .attr("class", `tooltip ${tooltip?.className || ""}`);
 
     tooltipDiv.attr("class", `tooltip ${tooltip?.className || ""}`);
-    tooltip &&
-      tooltip.style &&
+
+    tooltip?.style &&
       Object.entries(tooltip.style).map(([key, value]) =>
         tooltipDiv.style(key, value),
       );
@@ -206,13 +198,15 @@ const ScatterPlot = ({
         "class",
         d =>
           `points fill-current stroke-current ${
-            /*classNamePoints.classMap
-              ? classNamePoints.classMap[d[classNamePoints.key]]
-              : */ ``
+            classNamePoints?.className || ""
+          } ${
+            classNamePoints?.classMap
+              ? classNamePoints.classMap[d[classNamePoints.key]] || ``
+              : ``
           }`,
       )
       .attr("d", d =>
-        drawing && drawing.duration
+        drawing?.delay
           ? ``
           : symbol(
               shape?.shapeMap
@@ -229,20 +223,45 @@ const ScatterPlot = ({
         onClick && onClick(event, d);
       });
 
-    drawing &&
-      drawing.duration &&
+    drawing?.delay &&
       points
         .transition()
-        .delay((d, i) => (drawing.delay ? i * 50 : 0))
-        .duration(drawing.duration)
+        .delay((d, i) => i * (drawing.delay || 0))
+
         .attr("d", d =>
           symbol(
-            shape && shape.shapeMap
+            shape?.shapeMap
               ? shape.shapeMap[d[shape.key]]
               : shapeMapping["circle"],
-            sizeScale ? sizeScale(d[size.key]) : size.default || 12,
+            sizeScale ? sizeScale(d[size.key]) : size?.default || 12,
           )(),
         );
+
+    const newLine =
+      connect &&
+      line()
+        .x(d => xFn(d[x.key]))
+        .y(d => yFn(d[y.key]));
+
+    const pointsPath =
+      connect &&
+      pointsGroup
+        .append("path")
+        .attr("class", `stroke-current ${connect?.className || ""}`)
+        .datum(data)
+        .attr("fill", "none")
+        .attr("clip-path", "url(#clip)")
+        .attr("d", newLine);
+
+    if (connect && drawing && drawing.delay) {
+      const l = pointsPath.node().getTotalLength();
+
+      pointsPath
+        .attr("stroke-dasharray", `0,${l}`)
+        .transition()
+        .duration(drawing.delay * data.length)
+        .attr("stroke-dasharray", `${l},${l}`);
+    }
 
     function onMouseMove(event) {
       const [bX, bY] = pointer(event, select("body"));
@@ -263,9 +282,7 @@ const ScatterPlot = ({
     }
 
     function onMouseLeave(event) {
-      // selectAll(".axisPointLine").remove();
-
-      tooltipDiv.style("opacity", "0").style("left", `0px`).style("top", `0px`);
+      tooltipDiv.style("opacity", "0").style("left", `-1000px`);
     }
 
     //Add styles from style prop
@@ -320,8 +337,6 @@ const ScatterPlot = ({
         `w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 chart  h-64`,
         className || "",
       )}
-      //width={width + marginLeft + marginRight}
-      // height={height + marginTop + marginBottom}
     />
   );
 };

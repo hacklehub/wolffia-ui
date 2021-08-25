@@ -7,7 +7,7 @@ const data = [
 import BarChartGrouped from "../../charts/BarChartGrouped";
 
 export default {
-  title: "Bar Charts/Grouped",
+  title: "Bar Charts/Horizontal/Grouped",
   component: BarChartGrouped,
   parameters: { controls: { sort: "requiredFirst" } },
   argTypes: {

@@ -46,7 +46,7 @@ const SpineChart = ({
 
     const xRightFn = scaleLinear()
       .domain([0, extreme])
-      .range([paddingLeft + marginLeft + halfWidth, width]);
+      .range([paddingLeft + marginLeft + halfWidth, width - marginRight]);
 
     const xLeftFn = scaleLinear()
       .domain([0, extreme])

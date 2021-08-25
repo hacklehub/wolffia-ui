@@ -25,7 +25,7 @@ const data = [
 ];
 
 export default {
-  title: "Bar Charts/Spine Charts",
+  title: "Bar Charts/Horizontal/Spine Charts",
   component: SpineChart,
   args: {
     data,

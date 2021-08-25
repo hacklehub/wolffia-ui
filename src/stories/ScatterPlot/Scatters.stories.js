@@ -23,6 +23,10 @@ export default {
   component: ScatterPlot,
   args: {
     data,
+    x: { key: "independant" },
+    y: {
+      key: "dependant",
+    },
   },
 };
 
@@ -33,9 +37,87 @@ Simple.storyName = "Simple Scatterplot";
 
 Simple.args = {
   id: "simple-scatter",
-  x: { key: "independant", axisTicks: 10 },
-  y: {
-    key: "dependant",
-    axisTicks: 10,
+};
+
+export const Styled = Template.bind();
+Styled.storyName = "Styled Scatterplot";
+
+Styled.args = {
+  id: "styled-scatter",
+  className: "bg-red-100 dark:bg-red-900",
+};
+
+export const Colored = Template.bind();
+Colored.storyName = "Class Name to points by categorical value";
+
+Colored.args = {
+  id: "colored-scatter",
+  classNamePoints: { key: "category", className: "opacity-50", classMap },
+};
+
+export const Bubble = Template.bind();
+Bubble.storyName = "Bubble chart";
+
+Bubble.args = {
+  id: "bubble-scatter",
+  data: data.filter((_, i) => i <= 20),
+  classNamePoints: { key: "category", className: "opacity-50", classMap },
+  size: {
+    key: "sizeVariable",
+    min: 100,
+    max: 400,
+  },
+};
+
+export const Tooltip = Template.bind();
+Tooltip.storyName = "With Tooltip";
+
+Tooltip.args = {
+  id: "simple-tooltip",
+  tooltip: {},
+};
+
+export const CustomKeysTooltip = Template.bind();
+CustomKeysTooltip.storyName = "Custom Keys Tooltip";
+CustomKeysTooltip.args = {
+  id: "custom-keys-tooltip",
+  tooltip: {
+    keys: ["sizeVariable", "independant"],
+  },
+};
+
+export const CustomHTMLTooltip = Template.bind();
+CustomHTMLTooltip.storyName = "Custom HTML Tooltip";
+
+CustomHTMLTooltip.args = {
+  id: "custom-tooltip",
+  tooltip: {
+    html: row =>
+      `y = ${row.dependant} <br/> x = ${row.independant} <br/> size = ${row.sizeVariable} <br/> ${row.category}`,
+  },
+};
+
+export const Drawing = Template.bind();
+Drawing.storyName = "With entry animation - delay";
+
+Drawing.args = {
+  id: "drawing-scatter",
+  drawing: {
+    delay: 10,
+    duration: 2000,
+  },
+};
+
+export const Connect = Template.bind();
+Connect.storyName = "Connected scatterplot";
+
+Connect.args = {
+  id: "connect-scatter",
+  data: data.filter((_, i) => i < 10),
+  drawing: {
+    delay: 100,
+  },
+  connect: {
+    className: "text-purple-300",
   },
 };

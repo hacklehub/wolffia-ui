@@ -1,6 +1,6 @@
 import LinearGauge from "../../charts/LinearGauge";
 
-const data = 0.75;
+const data = 0.91;
 
 export default {
   title: "Gauges/Linear Gauge",
@@ -24,7 +24,7 @@ Simple.args = {
 };
 
 export const Styled = Template.bind();
-Styled.storyName = "Linear Gauge style based on value";
+Styled.storyName = "Style based on value";
 
 Styled.args = {
   id: "styled-linear-gauge",
@@ -64,9 +64,9 @@ ErrorGauge.storyName = "With errors";
 
 ErrorGauge.args = {
   id: "with-error-gauge",
-  label: "Task completion",
+  label: "Orders fulfilled",
   error: {
-    data: 0.2,
+    data: 0.04,
     className: "text-red-400 dark:text-red-700",
   },
 };
