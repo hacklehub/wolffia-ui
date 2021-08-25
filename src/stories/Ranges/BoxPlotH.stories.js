@@ -7,6 +7,14 @@ export default {
   component: BoxPlotH,
   args: {
     data,
+    y: { key: "month" },
+    x: {
+      minKey: "min",
+      maxKey: "max",
+      boxStart: "firstQuartile",
+      boxEnd: "lastQuartile",
+      midKey: "median",
+    },
   },
 };
 
@@ -17,14 +25,6 @@ Simple.storyName = "Simple Box Plot";
 
 Simple.args = {
   id: "simple-box-plot",
-  y: { key: "month" },
-  x: {
-    minKey: "min",
-    maxKey: "max",
-    boxStart: "firstQuartile",
-    boxEnd: "lastQuartile",
-    midKey: "median",
-  },
 };
 
 export const Styled = Template.bind();
@@ -32,14 +32,16 @@ Styled.storyName = "Styled Box Plot";
 
 Styled.args = {
   id: "simple-box-plot",
-  y: { key: "month" },
-  x: {
-    minKey: "min",
-    midKey: "median",
-    maxKey: "max",
-    boxStart: "firstQuartile",
-    boxEnd: "lastQuartile",
-  },
+  marginLeft: 80,
+  classNameBoxes: "fill-current text-yellow-50 opacity-50",
+};
+
+export const Tooltip = Template.bind({});
+Tooltip.storyName = "Tooltip";
+
+Tooltip.args = {
+  id: "tooltip",
+  tooltip: {},
   marginLeft: 80,
   classNameBoxes: "fill-current text-yellow-50 opacity-50",
 };

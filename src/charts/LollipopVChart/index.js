@@ -28,8 +28,6 @@ const LollipopVChart = ({
   classNamePoints,
   classNameLines,
   classNameSymbols,
-  //width = 240,
-  // height = 200,
   marginLeft = 40,
   marginRight = 40,
   marginTop = 40,

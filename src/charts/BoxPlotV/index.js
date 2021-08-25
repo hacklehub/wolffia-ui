@@ -11,7 +11,7 @@ import { scaleLinear, scaleBand } from "d3-scale";
 import { axisBottom, axisTop, axisLeft, axisRight } from "d3-axis";
 import { mergeTailwindClasses } from "../../utils";
 
-const BoxPlotH = ({
+const BoxPlotV = ({
   className,
   classNameData,
   classNameBoxes = "",
@@ -39,17 +39,17 @@ const BoxPlotH = ({
 
     const g = svg.append("g");
 
-    const xFn = scaleLinear()
-      .domain([
-        Number.isFinite(x.min) ? x.min : min(data.map(d => d[x.minKey])),
-        Number.isFinite(x.max) ? x.max : max(data.map(d => d[x.maxKey])),
-      ])
-      .range([marginLeft, width - paddingRight - marginRight]);
-
-    const yFn = scaleBand()
-      .domain(data.map(d => d[y.key]))
-      .range([marginTop + paddingTop, height - marginBottom - paddingBottom])
+    const xFn = scaleBand()
+      .domain(data.map(d => d[x.key]))
+      .range([marginLeft + paddingLeft, width - marginRight - paddingRight])
       .padding(paddingBar);
+
+    const yFn = scaleLinear()
+      .domain([
+        Number.isFinite(y.min) ? y.min : min(data.map(d => d[y.minKey])),
+        Number.isFinite(y.max) ? y.max : max(data.map(d => d[y.maxKey])),
+      ])
+      .range([height - marginBottom - paddingBottom, paddingTop + marginTop]);
 
     const clipPath = svg
       .append("clipPath")
@@ -78,17 +78,13 @@ const BoxPlotH = ({
           tooltipDiv.html(
             tooltip?.html
               ? tooltip.html(d)
-              : `min: ${d[x.minKey].toFixed(0)} <br/> range: ${d[
-                  x.boxStart
-                ].toFixed(0)} to ${d[x.boxEnd].toFixed(0)} <br/> mid: ${d[
-                  x.midKey
-                ].toFixed(0)} <br/> max: ${d[x.maxKey].toFixed(0)} `,
+              : `min: ${d[y.minKey].toFixed(0)} <br/> range: ${+d[
+                  y.boxStart
+                ].toFixed(0)} to ${+d[y.boxEnd].toFixed(0)} <br/> mid: ${d[
+                  y.midKey
+                ].toFixed(0)} <br/> max: ${d[y.maxKey].toFixed(0)} `,
           );
         }
-      })
-      .on("mousemove", function (event, d) {
-        const [bX, bY] = pointer(event, select("body"));
-        tooltipDiv.style("left", `${bX + 10}px`).style("top", `${bY + 10}px`);
       })
       .on("mouseleave", function (event, d) {
         tooltip &&
@@ -101,53 +97,53 @@ const BoxPlotH = ({
     dotRowsG
       .append("line")
       .attr("clip-path", "url(#clip)")
-      .attr("x1", d => xFn(d[x.minKey]))
-      .attr("x2", d => xFn(d[x.minKey]))
-      .attr("y1", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
+      .attr("x1", d => xFn(d[x.key]) + xFn.bandwidth() / 2)
+      .attr("x2", d => xFn(d[x.key]) + xFn.bandwidth() / 2)
+      .attr("y1", d => yFn(d[y.minKey]))
+      .attr("y2", d => yFn(d[y.minKey]))
       .attr("class", `box-plot-line stroke-current ${classNameData || ``}`)
       .transition()
       .duration(1000)
-      .attr("x2", d => xFn(d[x.maxKey]));
+      .attr("y2", d => yFn(d[y.maxKey]));
 
     const beginLines = dotRowsG
       .append("line")
       .attr("clip-path", "url(#clip)")
-      .attr("x1", d => xFn(d[x.minKey]))
-      .attr("x2", d => xFn(d[x.minKey]))
-      .attr("y1", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
+      .attr("x1", d => xFn(d[x.key]))
+      .attr("x2", d => xFn(d[x.key]))
+      .attr("y1", d => yFn(d[y.minKey]))
+      .attr("y2", d => yFn(d[y.minKey]))
       .attr("class", `box-plot-line stroke-current ${classNameData || ``}`)
       .transition()
       .duration(1000)
-      .attr("y1", d => yFn(d[y.key]))
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth());
+      .attr("x1", d => xFn(d[x.key]))
+      .attr("x2", d => xFn(d[x.key]) + xFn.bandwidth());
 
     const midLines = dotRowsG
       .append("line")
       .attr("clip-path", "url(#clip)")
-      .attr("x1", d => xFn(d[x.midKey]))
-      .attr("x2", d => xFn(d[x.midKey]))
-      .attr("y1", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
+      .attr("y1", d => yFn(d[y.midKey]))
+      .attr("y2", d => yFn(d[y.midKey]))
+      .attr("x1", d => xFn(d[x.key]) + xFn.bandwidth() / 2)
+      .attr("x2", d => xFn(d[x.key]) + xFn.bandwidth() / 2)
       .attr("class", `box-plot-line stroke-current ${classNameData || ``}`)
       .transition()
       .duration(1000)
-      .attr("y1", d => yFn(d[y.key]))
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth());
+      .attr("x1", d => xFn(d[x.key]))
+      .attr("x2", d => xFn(d[x.key]) + xFn.bandwidth());
 
     const endLines = dotRowsG
       .append("line")
       .attr("clip-path", "url(#clip)")
-      .attr("x1", d => xFn(d[x.maxKey]))
-      .attr("x2", d => xFn(d[x.maxKey]))
-      .attr("y1", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
+      .attr("y1", d => yFn(d[y.maxKey]))
+      .attr("y2", d => yFn(d[y.maxKey]))
+      .attr("x1", d => xFn(d[x.key]) + xFn.bandwidth() / 2)
+      .attr("x2", d => xFn(d[x.key]) + xFn.bandwidth() / 2)
       .attr("class", `box-plot-line stroke-current ${classNameData || ``}`)
       .transition()
       .duration(1000)
-      .attr("y1", d => yFn(d[y.key]))
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth());
+      .attr("x1", d => xFn(d[x.key]))
+      .attr("x2", d => xFn(d[x.key]) + xFn.bandwidth());
 
     const midRects = dotRowsG
       .append("rect")
@@ -159,12 +155,13 @@ const BoxPlotH = ({
         ),
       )
       .attr("clip-path", "url(#clip)")
-      .attr("x", d => xFn(d[x.boxStart]))
-      .attr("y", d => yFn(d[y.key]))
-      .attr("height", yFn.bandwidth())
+      .attr("y", d => height - marginBottom - paddingBottom)
+      .attr("x", d => xFn(d[x.key]))
+      .attr("width", xFn.bandwidth())
       .transition()
       .duration(1000)
-      .attr("width", d => xFn(d[x.boxEnd]) - xFn(d[x.boxStart]));
+      .attr("y", d => yFn(d[y.boxEnd]))
+      .attr("height", d => yFn(d[y.boxStart]) - yFn(d[y.boxEnd]));
 
     const tooltipDiv = select("#root")
       .append("div")
@@ -182,24 +179,11 @@ const BoxPlotH = ({
         "transform",
         `translate(${y.axis === "right" ? marginLeft + width : marginLeft},0)`,
       );
-
     yAxisG.call(yAxis);
 
-    paddingBottom &&
-      yAxisG
-        .append("line")
-        .attr("x1", 0)
-        .attr("x2", 0)
-        .attr("y1", marginTop + height - paddingBottom)
-        .attr("y2", marginTop + height)
-        .attr("stroke", "currentColor");
+    const xAxis = x.axis === "top" ? axisTop(xFn) : axisBottom(xFn);
 
-    const xAxis =
-      x.axis === "top"
-        ? axisTop(xFn).ticks(x.axisTicks || 5)
-        : axisBottom(xFn).ticks(x.axisTicks || 5);
-
-    const xAxisG = g.append("g").attr("class", "axis--x axis ");
+    const xAxisG = g.append("g").attr("class", "axis--x axis");
 
     xAxisG
       .attr(
@@ -216,16 +200,14 @@ const BoxPlotH = ({
     };
   }, [data]);
   return (
-    <>
-      <svg
-        id={id}
-        className={mergeTailwindClasses(
-          `w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 chart h-64`,
-          className || "",
-        )}
-      />
-    </>
+    <svg
+      id={id}
+      className={mergeTailwindClasses(
+        `w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 chart h-64`,
+        className || "",
+      )}
+    />
   );
 };
 
-export default BoxPlotH;
+export default BoxPlotV;
