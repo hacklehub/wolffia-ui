@@ -87,3 +87,11 @@ DataLabel.args = {
     className: "text-white",
   },
 };
+
+export const ReferenceLines = Template.bind({});
+ReferenceLines.storyName = "Add Reference lines";
+
+ReferenceLines.args = {
+  id: "with-reference-lines",
+  referenceLines: [{ x: 8000, className: "text-red-300 dashed" }],
+};

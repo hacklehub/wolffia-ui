@@ -1,5 +1,5 @@
 import LineChart from "../../charts/LineChart/index";
-import "./styles.css";
+import "../styles.css";
 
 const data = [
   { id: 1, value: 1311, reading: 1500 },

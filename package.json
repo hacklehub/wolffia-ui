@@ -10,7 +10,7 @@
     "build-storybook": "build-storybook",
     "storybook-docs": "start-storybook --docs --no-manager-cache",
     "storybook-serve": "start-storybook -p 6107 -s storybook-static",
-    "build": "babel src --out-dir dist",
+    "build": "babel src --out-dir dist && rm -rf ./dist/stories",
     "build-pack": "npm run build && npm pack",
     "build-publish": "rm -rf dist/ && npm run build && npm publish",
     "predeploy": "npm run build-storybook",

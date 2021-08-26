@@ -10,7 +10,7 @@ Wolffia-UI is an opinionated charting library, built with React, D3 and Tailwind
 - Responsive
 - consistent and easy to style
 - Support theming (Dark theme)
-- Support interactivity
+- Support interactivity, animations
 
 ## To initiate Wolffia-ui in a react app:
 
@@ -36,16 +36,30 @@ For example:
 
 ### Things to remember
 
-1. Every chart needs a unique **id**.
+#### 1. Every chart needs a unique **id**.
 
 Why?
 This is done so, so that D3 can target the correct chart in case multiple charts are there on the page.
 
-2. margin{Left/Right/Bottom/Top} and padding{Left/Right/Bottom/Top} props of charts refer to the chart area (not the entire svg). The svg can be styled using the className prop of the chart.
+#### 2. margin{Left/Right/Bottom/Top} and padding{Left/Right/Bottom/Top} props of charts refer to the chart area (not the entire svg).
 
-3. Normal text color is black and dark mode text is white. Normal background is white, while dark mode background color is bg-gray-900 https://tailwindcss.com/docs/customizing-colors. Customize this globally across your app by targeting `.chart` class.
+The svg can be styled using the className prop of the chart.
 
-4. Individual components of a chart can be given classes by className{componentName} prop. Refer to that chart's documentation of how to target that component.
+#### 3. Toggle dark mode in your App using Tailwind.
+
+Normal text color is black and dark mode text is white. Normal background is white, while dark mode background color is bg-gray-900.
+https://tailwindcss.com/docs/customizing-colors. Override this by text-{color}, dark:text-{color}, bg-{color} and dark:bg-{color}.
+
+#### 4. Target all charts using the `.chart` selector and `@apply` styles as per tailwind.
+
+#### 5. Individual items of a chart can be given classes by className{componentName} prop.
+
+Refer to that chart's documentation of how to target that sub-component. Rectangles & lines have a default fill-current and/or stroke-current className (https://tailwindcss.com/docs/fill), so you will just need to set text-{color}.
+
+#### 6. Code for conditional styling lies outside the library, and needs to be in the component which calls it.
+
+Why?
+We couldn't use a few libraries since we did not have control over finer styling. This gives the flexibility to the developer to attach a styling classNames to a chart component.
 
 ### Storybook notes:
 

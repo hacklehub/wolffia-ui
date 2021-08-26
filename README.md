@@ -1,5 +1,7 @@
 ## Wolffia-UI
 
+v.0.0.9
+
 Wolffia-UI (named after [Wolffia](https://en.wikipedia.org/wiki/Wolffia) - The smallest flower) is our data visualization layer, based on D3 and Tailwind.
 
 - Responsive

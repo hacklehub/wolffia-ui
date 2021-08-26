@@ -37,7 +37,7 @@ const LollipopHChart = ({
   paddingTop = 0,
   tooltip = {},
   shape = "circle",
-  x = { axis: "bottom", axisTicks: 5 },
+  x = { axis: "bottom", axisTicks: 2 },
   y = { axis: "left" },
 }) => {
   const refreshChart = () => {
@@ -78,8 +78,8 @@ const LollipopHChart = ({
 
     const xAxis =
       x.axis === "top"
-        ? axisTop(xFn).ticks(x.axisTicks || 5)
-        : axisBottom(xFn).ticks(x.axisTicks || 5);
+        ? axisTop(xFn).ticks(x.axisTicks || 2)
+        : axisBottom(xFn).ticks(x.axisTicks || 2);
 
     const xAxisG = g.append("g").attr("class", "axis--x axis ");
 

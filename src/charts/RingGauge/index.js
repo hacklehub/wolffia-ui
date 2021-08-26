@@ -167,7 +167,7 @@ const RingGauge = ({
     <svg
       id={id}
       className={mergeTailwindClasses(
-        `dark:bg-gray-800 text-gray-900 dark:text-gray-50 widget h-64`,
+        `w-full md:w-6/12 lg:w-4/12 dark:bg-gray-800 text-gray-900 dark:text-gray-50 h-64 chart`,
         className || "",
       )}
     />

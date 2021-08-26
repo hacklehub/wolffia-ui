@@ -117,7 +117,6 @@ const PieChart = ({
 
     const labelsG = labelArc && pathsG.append("g").attr("class", "labels");
 
-    console.log(labels);
     labelArc &&
       labelsG
         .selectAll("g")

@@ -186,6 +186,51 @@ const BarChartGrouped = ({
           );
     });
 
+    function drawHLine({
+      x,
+      y,
+      direction = "left",
+      className,
+      dashed = false,
+    }) {
+      const horizontalLine = g
+        .append("line")
+        .attr("class", mergeTailwindClasses(className, "line stroke-current"))
+        .attr("x1", direction === "left" ? marginLeft : x)
+        .attr("x2", direction === "left" ? x : width + marginLeft)
+        .attr("y1", y)
+        .attr("y2", y)
+        .attr("clip-path", "url(#clip)")
+        .attr("stroke", "#dddddd");
+      dashed && horizontalLine.style("stroke-dasharray", "10,5");
+    }
+
+    function drawVLine({ x, y, className, dashed }) {
+      const verticalLine = g
+        .append("line")
+        .attr("class", mergeTailwindClasses(className, "line stroke-current"))
+        .attr("x1", x)
+        .attr("x2", x)
+        .attr("y1", y)
+        .attr("y2", height - marginBottom - paddingBottom)
+        .attr("stroke", "currentColor")
+        .attr("clip-path", "url(#clip)")
+        .style("stroke-width", 1);
+      dashed && verticalLine.style("stroke-dasharray", "10,7");
+    }
+
+    referenceLines.map(object => {
+      object.x &&
+        drawVLine({
+          x:
+            x.scalingFunction === "time"
+              ? xFn(toDateTime({ [x.key]: object.x }))
+              : xFn(object.x),
+          y: marginTop,
+          className: `${object.className || ""} reference-line`,
+        });
+    });
+
     const tooltipDiv = select("#root")
       .append("div")
       .attr("id", "tooltip")

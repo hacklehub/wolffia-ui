@@ -102,7 +102,7 @@ const BarChartStacked = ({
         .attr(
           "height",
           waterfall
-            ? yFn.bandwidth() / x.length - waterfall.padding
+            ? yFn.bandwidth() / x.length - (waterfall.padding || 0)
             : yFn.bandwidth(),
         )
         .on("mouseenter", function (event, d) {

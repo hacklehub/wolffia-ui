@@ -37,7 +37,7 @@ const LollipopVChart = ({
   paddingBottom = 0,
   paddingTop = 0,
   shape = "circle",
-  x = { axis: "bottom", axisTicks: 5 },
+  x = { axis: "bottom", axisTicks: 2 },
   y = { axis: "left" },
 }) => {
   const refreshChart = () => {
@@ -90,7 +90,10 @@ const LollipopVChart = ({
       .duration(1000)
       .call(xAxis);
 
-    const yAxis = y.axis === "right" ? axisRight(yFn) : axisLeft(yFn);
+    const yAxis =
+      y.axis === "right"
+        ? axisRight(yFn).ticks(y.axisTicks || 2)
+        : axisLeft(yFn).ticks(y.axisTicks || 2);
 
     const yAxisG = g
       .append("g")

@@ -520,7 +520,7 @@ const LineChart = ({
     }
 
     function onMouseLeave(event) {
-      selectAll(".axisPointLine").remove();
+      selectAll(".axis-point-line").remove();
 
       tooltip && tooltipDiv.style("opacity", "0").style(("left", "-1000px"));
     }
@@ -534,7 +534,7 @@ const LineChart = ({
     }) {
       const horizontalLine = g
         .append("line")
-        .attr("class", className || "axisPointLine")
+        .attr("class", className || "axis-point-line")
         .attr("x1", direction === "left" ? marginLeft : x)
         .attr("x2", direction === "left" ? x : width + marginLeft)
         .attr("y1", y)
@@ -546,7 +546,7 @@ const LineChart = ({
     function drawVLine({ x, y, className, dashed }) {
       const verticalLine = g
         .append("line")
-        .attr("class", className || "axisPointLine")
+        .attr("class", className || "axis-point-line")
         .attr("x1", x)
         .attr("x2", x)
         .attr("y1", y)
@@ -558,7 +558,7 @@ const LineChart = ({
     }
 
     function onMouseMove(event) {
-      selectAll(".axisPointLine").remove();
+      selectAll(".axis-point-line").remove();
 
       const [cX, cY] = pointer(event, this);
 
@@ -575,7 +575,7 @@ const LineChart = ({
             (yLeftFn && yLeftFn(max(dataLeft))) || height - marginBottom,
             (yRightFn && yRightFn(max(dataRight))) || height - marginBottom,
           ]),
-          className: "axisPointLine text-gray-200 stroke-current",
+          className: "axis-point-line text-gray-200 stroke-current",
           dashed: true,
         });
 

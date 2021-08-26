@@ -1,6 +1,6 @@
 import LineChart from "../../charts/LineChart/index";
 import { DateTime } from "luxon";
-import "./styles.css";
+import "../styles.css";
 
 const randBetween = (x, y) => x + Math.random() * (y - x);
 
