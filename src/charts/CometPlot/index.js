@@ -25,7 +25,6 @@ const DotPlot = ({
   id,
   className,
   data = [],
-  classNameData,
   y = { key: "label" },
   x = {},
   marginTop = 40,
@@ -36,6 +35,7 @@ const DotPlot = ({
   paddingLeft = 0,
   paddingRight = 0,
   paddingBottom = 0,
+  size,
   shape = "circle",
   tooltip = {},
   zooming,
@@ -111,33 +111,45 @@ const DotPlot = ({
       });
 
     dotRowsG
-      .append("line")
+      .append("polyline")
       .attr("clip-path", "url(#clip)")
-      .attr("x1", d => xFn(d[x.minKey]))
-      .attr("x2", d => xFn(d[x.minKey]))
-      .attr("y1", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
-      .attr("y2", d => yFn(d[y.key]) + yFn.bandwidth() / 2)
-      .attr("class", `dot-plot-line stroke-current ${classNameData || ``}`)
+      .attr(
+        "class",
+        mergeTailwindClasses(`fill-current stroke-0`, x.className || ""),
+      )
+      .attr(
+        "points",
+        d =>
+          `${xFn(d[x.minKey])} ${yFn(d[y.key]) + yFn.bandwidth() / 2}, ${xFn(
+            d[x.minKey],
+          )} ${yFn(d[y.key]) + yFn.bandwidth() / 2}, ${xFn(d[x.minKey])} ${
+            yFn(d[y.key]) + yFn.bandwidth() / 2
+          }`,
+      )
       .transition()
       .duration(1000)
-      .attr("x2", d => xFn(d[x.maxKey]));
-
-    dotRowsG
-      .append("path")
-      .attr("class", `start-dots fill-current ${classNameData || ""} `)
-      .attr("d", d => symbol(shapeMapping[shape], 100)())
       .attr(
-        "transform",
+        "points",
         d =>
-          `translate(${xFn(d[x.minKey])},${
-            yFn(d[y.key]) + yFn.bandwidth() / 2
-          })`,
+          `${xFn(d[x.minKey])} ${yFn(d[y.key]) + yFn.bandwidth() / 2}, ${xFn(
+            d[x.maxKey],
+          )} ${
+            yFn(d[y.key]) - Math.sqrt((size || 100) / 4) + yFn.bandwidth() / 2
+          }, ${xFn(d[x.maxKey])} ${
+            yFn(d[y.key]) + Math.sqrt((size || 100) / 4) + yFn.bandwidth() / 2
+          }`,
       );
 
     dotRowsG
       .append("path")
-      .attr("class", `end-dots fill-current ${classNameData || ""} `)
-      .attr("d", d => symbol(shapeMapping[shape], 100)())
+      .attr(
+        "class",
+        mergeTailwindClasses(
+          `fill-current end-dots stroke-current stroke-0`,
+          x.className || "",
+        ),
+      )
+      .attr("d", d => symbol(shapeMapping[shape], size || 100)())
       .attr(
         "transform",
         d =>

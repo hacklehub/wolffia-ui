@@ -1,4 +1,4 @@
-import DotPlot from "../../charts/DotPlot";
+import CometPlot from "../../charts/CometPlot";
 
 const data = [
   {
@@ -50,17 +50,17 @@ const data = [
 ];
 
 export default {
-  title: "Ranges/Dot Plots",
-  component: DotPlot,
+  title: "Ranges/Comet Plots",
+  component: CometPlot,
   args: {
     data,
   },
 };
 
-const Template = args => <DotPlot {...args} />;
+const Template = args => <CometPlot {...args} />;
 
 export const Simple = Template.bind();
-Simple.storyName = "Dot Plot";
+Simple.storyName = "Comet Plot";
 
 Simple.args = {
   id: "climate-month-wise-shape",
@@ -69,23 +69,44 @@ Simple.args = {
   x: { minKey: "minimum", maxKey: "maximum" },
 };
 
-export const Shape = Template.bind();
-Shape.storyName = "Custom Shapes";
+export const CustomStart = Template.bind();
+CustomStart.storyName = "Custom Axis";
 
-Shape.args = {
-  id: "climate-month-wise",
+CustomStart.args = {
+  id: "climate-month-wise-shape",
   className: "text-green-700 dark:text-green-300",
   y: { key: "month" },
-  x: { minKey: "minimum", maxKey: "maximum" },
-  shape: "square",
+  x: { minKey: "minimum", maxKey: "maximum", start: 0 },
 };
 
-export const Axis = Template.bind();
-Axis.storyName = "Axis custom start";
+export const CustomShape = Template.bind();
+CustomShape.storyName = "Custom Shapes and className";
 
-Axis.args = {
-  id: "climate-month-wise",
+CustomShape.args = {
+  id: "climate-month-wise-shape",
   className: "text-green-700 dark:text-green-300",
   y: { key: "month" },
-  x: { minKey: "minimum", maxKey: "maximum", start: 0, end: 50 },
+  x: {
+    minKey: "minimum",
+    maxKey: "maximum",
+    start: 0,
+    className: "text-red-300",
+  },
+  shape: "diamond",
+};
+
+export const CustomSize = Template.bind();
+CustomSize.storyName = "Custom size";
+
+CustomSize.args = {
+  id: "climate-month-wise-shape",
+  className: "text-green-700 dark:text-green-300",
+  y: { key: "month" },
+  x: {
+    minKey: "minimum",
+    maxKey: "maximum",
+    start: 0,
+    className: "text-red-300",
+  },
+  size: 25,
 };

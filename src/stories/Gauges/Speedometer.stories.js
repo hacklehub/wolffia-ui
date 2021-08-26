@@ -32,9 +32,9 @@ Simple.args = {
 };
 
 export const Labels = Template.bind({});
-Labels.storyName = "with label";
+Labels.storyName = "with custom label";
 
 Labels.args = {
   id: "labels-speedometer-gauge",
-  label: "Error Rate",
+  label: { text: "Error Rate", className: "text-xl" },
 };

@@ -105,10 +105,10 @@ const SpeedometerChart = ({
       g
         .append("text")
         .attr("text-anchor", "middle")
-        .attr("class", "fill-current text-5xl")
+        .attr("class", `fill-current ${label?.className}`)
         .attr("x", 0)
         .attr("y", height - marginBottom - marginTop - width / 2)
-        .text(label);
+        .text(label.text);
 
     const xAxis = g =>
       g.attr("text-anchor", "middle").call(g =>
