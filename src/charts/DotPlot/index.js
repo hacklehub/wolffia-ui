@@ -162,11 +162,17 @@ const DotPlot = ({
 
       selectAll(".start-dots").attr(
         "transform",
-        d => `translate(${xFn(d[x.minKey])},${yFn(d[y.key])})`,
+        d =>
+          `translate(${xFn(d[x.minKey])},${
+            yFn(d[y.key]) + yFn.bandwidth() / 2
+          })`,
       );
       selectAll(".end-dots").attr(
         "transform",
-        d => `translate(${xFn(d[x.maxKey])},${yFn(d[y.key])})`,
+        d =>
+          `translate(${xFn(d[x.maxKey])},${
+            yFn(d[y.key]) + yFn.bandwidth() / 2
+          })`,
       );
     };
 
@@ -226,7 +232,7 @@ const DotPlot = ({
 
       function zoomed(event) {
         xFn.range(
-          [marginLeft, width - paddingRight].map(d =>
+          [marginLeft, width - paddingRight - marginRight].map(d =>
             event.transform.applyX(d),
           ),
         );

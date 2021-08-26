@@ -110,3 +110,14 @@ CustomSize.args = {
   },
   size: 25,
 };
+
+export const Zooming = Template.bind();
+Zooming.storyName = "Zooming custom start";
+
+Zooming.args = {
+  id: "climate-month-wise",
+  className: "text-green-700 dark:text-green-300",
+  y: { key: "month" },
+  x: { minKey: "minimum", maxKey: "maximum", start: 0, end: 50 },
+  zooming: {},
+};

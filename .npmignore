@@ -4,6 +4,9 @@ src/
 tests/
 .babelrc
 !dist/
+build/
+
+# Remove dist and add build later when grunt is also ready
 *.tgz
 .storybook/
 .vscode/

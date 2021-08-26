@@ -115,15 +115,26 @@ const DotPlot = ({
       .attr("clip-path", "url(#clip)")
       .attr(
         "class",
-        mergeTailwindClasses(`fill-current stroke-0`, x.className || ""),
+        mergeTailwindClasses(
+          `comet-tail fill-current stroke-0`,
+          x.className || "",
+        ),
       )
       .attr(
         "points",
         d =>
           `${xFn(d[x.minKey])} ${yFn(d[y.key]) + yFn.bandwidth() / 2}, ${xFn(
             d[x.minKey],
-          )} ${yFn(d[y.key]) + yFn.bandwidth() / 2}, ${xFn(d[x.minKey])} ${
-            yFn(d[y.key]) + yFn.bandwidth() / 2
+          )} ${
+            yFn(d[y.key]) +
+            yFn.bandwidth() / 2 -
+            Math.sqrt((size || 100) / 4) -
+            1
+          }, ${xFn(d[x.minKey])} ${
+            yFn(d[y.key]) +
+            Math.sqrt((size || 100) / 4) +
+            yFn.bandwidth() / 2 +
+            1
           }`,
       )
       .transition()
@@ -168,17 +179,30 @@ const DotPlot = ({
       );
 
     const redraw = () => {
-      selectAll(".dot-plot-line")
-        .attr("x1", d => xFn(d[x.minKey]))
-        .attr("x2", d => xFn(d[x.maxKey]));
-
-      selectAll(".start-dots").attr(
-        "transform",
-        d => `translate(${xFn(d[x.minKey])},${yFn(d[y.key])})`,
+      selectAll(".comet-tail").attr(
+        "points",
+        d =>
+          `${xFn(d[x.minKey])} ${yFn(d[y.key]) + yFn.bandwidth() / 2}, ${xFn(
+            d[x.maxKey],
+          )} ${
+            yFn(d[y.key]) +
+            yFn.bandwidth() / 2 -
+            1 -
+            Math.sqrt((size || 100) / 4)
+          }, ${xFn(d[x.maxKey])} ${
+            yFn(d[y.key]) +
+            Math.sqrt((size || 100) / 4) +
+            1 +
+            yFn.bandwidth() / 2
+          }`,
       );
+
       selectAll(".end-dots").attr(
         "transform",
-        d => `translate(${xFn(d[x.maxKey])},${yFn(d[y.key])})`,
+        d =>
+          `translate(${xFn(d[x.maxKey])},${
+            yFn(d[y.key]) + yFn.bandwidth() / 2
+          })`,
       );
     };
 
@@ -238,7 +262,7 @@ const DotPlot = ({
 
       function zoomed(event) {
         xFn.range(
-          [marginLeft, width - paddingRight].map(d =>
+          [marginLeft, width - paddingRight - marginRight].map(d =>
             event.transform.applyX(d),
           ),
         );
