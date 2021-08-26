@@ -26,6 +26,7 @@ const ColumnChartGrouped = ({
   drawing,
   tooltip,
   direction = "top",
+  referenceLines = [],
 }) => {
   const refreshChart = () => {
     const svg = select(`#${id}`);
@@ -119,6 +120,34 @@ const ColumnChartGrouped = ({
               ? height - marginBottom - yFn(d[column.key])
               : 0,
           );
+    });
+
+    function drawHLine({
+      x,
+      y,
+      direction = "left",
+      className,
+      dashed = false,
+    }) {
+      const horizontalLine = g
+        .append("line")
+        .attr("class", mergeTailwindClasses(className, "line stroke-current"))
+        .attr("x1", direction === "left" ? marginLeft : x)
+        .attr("x2", direction === "left" ? x : width + marginLeft)
+        .attr("y1", y)
+        .attr("y2", y)
+        .attr("clip-path", "url(#clip)")
+        .attr("stroke", "#dddddd");
+      dashed && horizontalLine.style("stroke-dasharray", "10,5");
+    }
+
+    referenceLines.map(object => {
+      object.y &&
+        drawHLine({
+          x: width - marginRight,
+          y: yFn(object.y),
+          className: `${object.className || ""} reference-line`,
+        });
     });
 
     const tooltipDiv = select("#root")

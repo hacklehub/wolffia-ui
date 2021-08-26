@@ -80,3 +80,11 @@ Drawing.args = {
     duration: 1000,
   },
 };
+
+export const ReferenceLines = Template.bind({});
+ReferenceLines.storyName = "Add Reference lines";
+
+ReferenceLines.args = {
+  id: "with-reference-lines",
+  referenceLines: [{ y: 2500, className: "text-red-300 dashed" }],
+};

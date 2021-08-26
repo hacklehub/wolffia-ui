@@ -80,3 +80,28 @@ Labels.args = {
   labels: { key: "name", radius: 0.9, className: "text-xs" },
   value: "USA",
 };
+
+export const PaddingAngle = Template.bind();
+PaddingAngle.storyName = "Padding Angle ";
+
+PaddingAngle.args = {
+  id: "padding-angle",
+  className: "md:w-6/12",
+  classNamePoints: { classMap },
+  innerRadius: 0.7,
+  paddingAngle: 0.04,
+  value: "USA",
+};
+
+export const CornerRadius = Template.bind();
+CornerRadius.storyName = "Add corner radius ";
+
+CornerRadius.args = {
+  id: "padding-angle",
+  className: "md:w-6/12",
+  classNamePoints: { classMap },
+  innerRadius: 0.7,
+  cornerRadius: 5,
+  paddingAngle: 0.04,
+  value: "USA",
+};

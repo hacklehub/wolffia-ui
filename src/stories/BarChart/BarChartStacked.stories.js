@@ -163,7 +163,6 @@ const newData = data.map(row => {
     Beverages: (row.Beverages || 0) / total,
   };
 });
-console.log(newData);
 
 export const Proportion = Template.bind();
 Proportion.storyName = "100% Stacked bar";
@@ -184,21 +183,10 @@ Labels.args = {
   dataLabels: {},
 };
 
-/*export const Direction = Template.bind();
-Direction.storyName = "Left ";
+export const ReferenceLines = Template.bind({});
+ReferenceLines.storyName = "Add Reference lines";
 
-Direction.args = {
-  id: "simple-bar-chart-left",
-  x: [
-    {
-      key: "USA",
-      className: "text-purple-300",
-    },
-    { key: "Europe", className: "text-purple-500 " },
-    { key: "APAC", className: "text-purple-700" },
-    { key: "Africa", className: "text-purple-900" },
-  ],
-  y: { key: "name" },
-  direction: "lelft",
+ReferenceLines.args = {
+  id: "with-reference-lines",
+  referenceLines: [{ x: 2500, className: "text-red-300 dashed" }],
 };
-*/

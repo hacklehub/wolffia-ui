@@ -17,6 +17,8 @@ const PieChart = ({
   paddingRight = 0,
   paddingBottom = 0,
   paddingTop = 0,
+  paddingAngle = 0,
+  cornerRadius = 0,
   marginLeft = 40,
   marginRight = 40,
   marginTop = 40,
@@ -38,7 +40,8 @@ const PieChart = ({
 
     const pieFn = pie()
       .sort(null)
-      .value(d => d[value]);
+      .value(d => d[value])
+      .padAngle(paddingAngle);
 
     const chartArea = [
       width - marginLeft - marginRight,
@@ -49,14 +52,14 @@ const PieChart = ({
 
     const arcFn = arc()
       .innerRadius(radius * innerRadius)
-      .outerRadius(radius);
-
+      .outerRadius(radius)
+      .padAngle(paddingAngle)
+      .cornerRadius(cornerRadius);
     const labelArc =
       labels?.radius &&
       arc()
         .innerRadius(radius * labels.radius)
         .outerRadius(radius * labels.radius);
-
     const arcs = pieFn(data);
 
     const pathsG = g

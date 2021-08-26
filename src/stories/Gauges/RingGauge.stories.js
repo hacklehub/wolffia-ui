@@ -19,18 +19,6 @@ const metrics = [
     target: 55,
     className: "text-green-500",
   },
-  {
-    name: "Target 4",
-    score: 34,
-    target: 100,
-    className: "text-red-500",
-  },
-  {
-    name: "Target 5",
-    score: 21,
-    target: 100,
-    className: "text-red-500",
-  },
 ];
 
 export default {
