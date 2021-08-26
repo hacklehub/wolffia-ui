@@ -64,8 +64,8 @@ const RingGauge = ({
     const arcFn = arc()
       .innerRadius((d, i) => getInnerRadius(i))
       .outerRadius((d, i) => getOuterRadius(i))
-      .startAngle(((startAngle / 90) * PI) / 2) // Todo customize start angle
-      .endAngle((d, i) => scale(d)) // Todo Customize end angle
+      .startAngle(((startAngle / 90) * PI) / 2)
+      .endAngle((d, i) => scale(d))
       .cornerRadius(2);
 
     const backgroundArcs = g
