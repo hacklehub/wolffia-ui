@@ -1,6 +1,6 @@
 {
   "name": "wolffia-ui",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Charting library with d3js and tailwindcss",
   "main": "./dist/index.js",
   "homepage": "https://pikkol.github.io/wolffia-ui",
