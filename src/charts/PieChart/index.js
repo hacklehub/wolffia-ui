@@ -55,6 +55,7 @@ const PieChart = ({
       .outerRadius(radius)
       .padAngle(paddingAngle)
       .cornerRadius(cornerRadius);
+
     const labelArc =
       labels?.radius &&
       arc()

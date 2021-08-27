@@ -3,7 +3,7 @@ import PieChart from "../../charts/PieChart";
 const data = [
   { name: "Product A", USA: 10000, Europe: 4000, APAC: 5000, Africa: 1000 },
   { name: "Product B", USA: 9400, Europe: 9000, APAC: 4000 },
-  { name: "Product C", USA: 8000, Europe: 4000, APAC: 1000 },
+  { name: "Product C", USA: 6000, Europe: 4000, APAC: 1000 },
 ];
 
 const classMap = {
