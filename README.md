@@ -1,10 +1,10 @@
-## Wolffia-UI
+## Headless-charts
 
 v.0.0.9
 
-Wolffia-UI (named after [Wolffia](https://en.wikipedia.org/wiki/Wolffia) - The smallest flower) is our data visualization layer, based on D3 and Tailwind.
+Headless-charts is a charting library, based on D3 and Tailwind.
 
-- Responsive
+- Responsive by default
 - consistent and easy to style
 - Support theming (Dark theme)
 - Support interactivity
